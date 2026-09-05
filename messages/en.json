@@ -1,0 +1,136 @@
+{
+  "Header": {
+    "signIn": "Sign in",
+    "myPanel": "My dashboard",
+    "signOut": "Sign out",
+    "roleAdmin": "Administrator",
+    "roleStudent": "Student"
+  },
+  "Footer": {
+    "copyright": "© {year} Centro de Lenguas • Universidad Panamericana.",
+    "exams": "Exams",
+    "faqs": "FAQs"
+  },
+  "UserMenu": {},
+  "LanguageSwitcher": {
+    "switchToEnglish": "Switch to English",
+    "switchToSpanish": "Switch to Spanish"
+  },
+  "HomePage": {
+    "eyebrow": "Centro de Lenguas • Universidad Panamericana",
+    "heroTitle": "Register for your TOEIC or TOEFL exam",
+    "heroSubtitle": "Check available dates and manage your registrations and results from your student dashboard.",
+    "goToDashboard": "Go to my dashboard",
+    "upcomingExams": "Upcoming exams",
+    "viewAll": "View all",
+    "noExamsScheduled": "No exams scheduled at the moment",
+    "faqsTitle": "Frequently asked questions"
+  },
+  "ExamDateCard": {
+    "examDate": "Exam date: {date}",
+    "registrationWindow": "Registration: {start} to {end}",
+    "viewDetail": "View details"
+  },
+  "ExamsListPage": {
+    "title": "Upcoming exams",
+    "subtitle": "Check available TOEIC and TOEFL dates and their registration periods.",
+    "noExamsScheduled": "No exams scheduled at the moment"
+  },
+  "ExamDatePage": {
+    "examDateLabel": "Exam date",
+    "registrationPeriod": "Registration period",
+    "relevantInfo": "Relevant information",
+    "instructions": "Instructions",
+    "viewInMyDashboard": "View exam in my dashboard",
+    "registerCta": "Register",
+    "payExam": "Pay for exam"
+  },
+  "StudentDashboard": {
+    "greeting": "Hi{name}",
+    "subtitle": "This is your Centro de Lenguas student dashboard.",
+    "nextExam": "Next exam",
+    "noUpcomingExams": "No upcoming exams",
+    "approvedRegistrations": "Enrolled registrations",
+    "passedExams": "Passed exams",
+    "yourNextExam": "Your next exam",
+    "viewDetail": "View details",
+    "myExams": "My exams",
+    "noRegistrationsTitle": "You don't have any registrations yet",
+    "noRegistrationsDescription": "Explore upcoming exams and register.",
+    "viewUpcomingExams": "View upcoming exams →",
+    "passedWithScore": "Passed · {score}",
+    "notPassedWithScore": "Not passed · {score}",
+    "resultPending": "Result pending",
+    "instructions": "Instructions"
+  },
+  "RegistrationPage": {
+    "title": "Registration • {examName} {termName} {termYear}",
+    "registrationOpeningSoon": "Registration for this exam hasn't opened yet.",
+    "registrationClosed": "Registration for this exam has already closed."
+  },
+  "MyExamPage": {
+    "backToMyExams": "Back to my exams",
+    "registrationRejected": "Your registration was rejected",
+    "examDate": "Exam date: {date}",
+    "result": "Result",
+    "passed": "PASSED",
+    "notPassed": "NOT PASSED",
+    "resultNotAvailable": "Your result isn't available yet.",
+    "submittedDocuments": "Submitted documents"
+  },
+  "RegistrationForm": {
+    "name": "Name",
+    "institutionalEmail": "Institutional email",
+    "studentId": "Student ID",
+    "studentIdPlaceholder": "E.g. 0272150",
+    "studentIdAlreadyRegistered": "Your student ID is already registered. If it's incorrect, contact an administrator.",
+    "requiredDocuments": "Required documents",
+    "confirmRegistration": "Confirm registration"
+  },
+  "DocumentUpload": {
+    "invalidFileType": "File type not allowed. Use PDF, JPG or PNG.",
+    "fileTooLarge": "The file can't be larger than 8 MB.",
+    "uploadFailed": "We couldn't upload the file. Please try again.",
+    "change": "Change",
+    "selectFile": "Select file"
+  },
+  "Faqs": {
+    "title": "Frequently asked questions",
+    "noFaqs": "No FAQs published yet"
+  },
+  "Validation": {
+    "studentIdMinLength": "Student ID must be at least 4 characters long.",
+    "studentIdMaxLength": "Student ID can't be longer than 20 characters.",
+    "studentIdInvalidChars": "Student ID can only contain letters, numbers and hyphens.",
+    "selectExamDate": "Select an exam date.",
+    "mustUploadAllDocuments": "You must upload all 4 required documents."
+  },
+  "Errors": {
+    "examDateNotAvailable": "This exam date is no longer available.",
+    "registrationNotOpenYet": "Registration for this exam hasn't opened yet.",
+    "registrationClosed": "Registration for this exam has already closed.",
+    "alreadyRegistered": "You already have a registration for this exam.",
+    "invalidDocument": "One of the uploaded documents isn't valid. Please try again.",
+    "invalidFileType": "File type not allowed.",
+    "documentInvalidOrTooLarge": "One of the uploaded documents isn't valid or exceeds the allowed size.",
+    "generic": "Something went wrong. Please try again in a moment."
+  },
+  "Statuses": {
+    "PENDING": "Pending approval",
+    "APPROVED": "Enrolled",
+    "REJECTED": "Rejected",
+    "CANCELLED": "Cancelled",
+    "UPCOMING": "Registration opening soon",
+    "OPEN": "Registration open",
+    "CLOSED": "Registration closed"
+  },
+  "DocumentTypes": {
+    "PAYMENT_PROOF": "Proof of payment",
+    "UNIVERSITY_ID_FRONT": "University ID (front)",
+    "INE_FRONT": "INE (front)",
+    "INE_BACK": "INE (back)"
+  },
+  "ExamType": {
+    "genericExam": "Exam"
+  }
+}

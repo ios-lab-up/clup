@@ -1,0 +1,8 @@
+# Recordatorio de examen — se invoca cada hora. El endpoint es idempotente
+# (ReminderLog con constraint único), así que llamarlo de más nunca duplica
+# envíos; esto solo evita perder la ventana de "1 día antes" por reinicios
+# o drift del contenedor.
+#
+# cron no hereda las variables de entorno del contenedor por defecto, por
+# eso se cargan desde /etc/environment (escrito por entrypoint.sh al arrancar).
+0 * * * * . /etc/environment; /usr/bin/curl -sf -X POST -H "x-cron-secret: $CRON_SECRET" "$CRON_TARGET_URL" >> /var/log/cron.log 2>&1

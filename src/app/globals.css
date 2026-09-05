@@ -1,0 +1,41 @@
+@import "tailwindcss";
+
+:root {
+  --background: #f9fafb;
+  --foreground: #171717;
+}
+
+@theme inline {
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+
+  /* CLUP brand palette — ver design.md */
+  --color-wine-50: #fdf2f4;
+  --color-wine-100: #fce7eb;
+  --color-wine-200: #f9d0d9;
+  --color-wine-300: #f4a8b8;
+  --color-wine-400: #ed7a93;
+  --color-wine-500: #e04d6f;
+  --color-wine-600: #c62d56;
+  --color-wine-700: #8c1f3d;
+  --color-wine-800: #771a34;
+  --color-wine-900: #5e1629;
+  --color-wine-950: #3a0a18;
+
+  --color-gold-50: #faf6ee;
+  --color-gold-100: #f3ebd4;
+  --color-gold-200: #e8d5a8;
+  --color-gold-300: #c8a568;
+  --color-gold-400: #c09a55;
+  --color-gold-500: #b08440;
+  --color-gold-600: #9a6b34;
+  --color-gold-700: #7d522c;
+  --color-gold-800: #694429;
+  --color-gold-900: #5a3a26;
+  --color-gold-950: #341e13;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+}

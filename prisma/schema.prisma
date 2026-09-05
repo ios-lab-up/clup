@@ -1,0 +1,220 @@
+// Prisma schema — CLUP (Centro de Lenguas de la Universidad Panamericana)
+// docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  STUDENT
+  ADMIN
+  // SUPER_ADMIN puede agregarse después con ALTER TYPE ... ADD VALUE (no rompe nada existente)
+}
+
+enum ExamType {
+  TOEIC
+  TOEFL
+  CUSTOM
+}
+
+enum RegistrationStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  CANCELLED
+}
+
+enum DocumentType {
+  PAYMENT_PROOF
+  UNIVERSITY_ID_FRONT
+  INE_FRONT
+  INE_BACK
+}
+
+model Profile {
+  id          String   @id @default(cuid())
+  // Nullable: un admin puede "pre-invitar" por email antes del primer login;
+  // se enlaza automáticamente la primera vez que esa persona entra con Clerk.
+  clerkUserId String?  @unique
+  email       String   @unique
+  name        String
+  // Matrícula institucional — se captura en la primera inscripción, se usa para
+  // resolver filas del CSV de carga masiva de resultados (instructions.md §23).
+  studentId   String?  @unique
+  role        Role     @default(STUDENT)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  registrations Registration[]
+  auditLogs     AuditLog[]
+
+  @@index([role])
+}
+
+model Term {
+  id          String   @id @default(cuid())
+  name        String
+  year        Int
+  description String?
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  examDates ExamDate[]
+
+  @@unique([name, year])
+}
+
+model Exam {
+  id           String   @id @default(cuid())
+  type         ExamType
+  name         String
+  description  String?
+  // Puntaje mínimo para aprobar este examen. Editable desde administración.
+  passingScore Int      @default(0)
+  active       Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  examDates ExamDate[]
+}
+
+model ExamDate {
+  id                    String   @id @default(cuid())
+  termId                String
+  examId                String
+  examDate              DateTime
+  registrationStartDate DateTime
+  registrationEndDate   DateTime
+  capacity              Int?
+  instructions          String?
+  info                  String?
+  active                Boolean  @default(true)
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  term          Term           @relation(fields: [termId], references: [id], onDelete: Restrict)
+  exam          Exam           @relation(fields: [examId], references: [id], onDelete: Restrict)
+  registrations Registration[]
+  reminderLogs  ReminderLog[]
+
+  @@index([termId])
+  @@index([examId])
+  @@index([examDate])
+}
+
+model Registration {
+  id              String             @id @default(cuid())
+  profileId       String
+  examDateId      String
+  status          RegistrationStatus @default(PENDING)
+  rejectionReason String?
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+
+  profile      Profile       @relation(fields: [profileId], references: [id], onDelete: Restrict)
+  examDate     ExamDate      @relation(fields: [examDateId], references: [id], onDelete: Restrict)
+  documents    Document[]
+  result       Result?
+  reminderLogs ReminderLog[]
+
+  // Imposibilita una segunda inscripción del mismo alumno a la misma fecha de examen.
+  @@unique([profileId, examDateId])
+  @@index([status])
+  @@index([examDateId])
+}
+
+model Document {
+  id             String       @id @default(cuid())
+  registrationId String
+  type           DocumentType
+  storageKey     String
+  mimeType       String
+  size           Int
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  registration Registration @relation(fields: [registrationId], references: [id], onDelete: Cascade)
+
+  // Re-subir un documento reemplaza (upsert), nunca duplica.
+  @@unique([registrationId, type])
+}
+
+model Result {
+  id             String    @id @default(cuid())
+  registrationId String    @unique
+  score          Int
+  passed         Boolean
+  published      Boolean   @default(false)
+  publishedAt    DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  registration Registration @relation(fields: [registrationId], references: [id], onDelete: Cascade)
+}
+
+model FAQ {
+  id        String   @id @default(cuid())
+  question  String
+  answer    String
+  order     Int      @default(0)
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([order])
+}
+
+model Instruction {
+  id        String   @id @default(cuid())
+  title     String
+  body      String
+  order     Int      @default(0)
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([order])
+}
+
+model Setting {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  value     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model AuditLog {
+  id             String   @id @default(cuid())
+  // null = acción disparada por el sistema (ej. cron de recordatorios), sin actor humano.
+  actorProfileId String?
+  action         String
+  entity         String
+  entityId       String
+  metadata       Json?
+  createdAt      DateTime @default(now())
+
+  actor Profile? @relation(fields: [actorProfileId], references: [id], onDelete: SetNull)
+
+  @@index([entity, entityId])
+  @@index([actorProfileId])
+}
+
+model ReminderLog {
+  id             String   @id @default(cuid())
+  examDateId     String
+  registrationId String
+  sentAt         DateTime @default(now())
+
+  examDate     ExamDate     @relation(fields: [examDateId], references: [id], onDelete: Cascade)
+  registration Registration @relation(fields: [registrationId], references: [id], onDelete: Cascade)
+
+  // Garantiza idempotencia: nunca se envía el mismo recordatorio dos veces.
+  @@unique([examDateId, registrationId])
+}

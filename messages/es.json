@@ -1,0 +1,136 @@
+{
+  "Header": {
+    "signIn": "Iniciar sesión",
+    "myPanel": "Mi panel",
+    "signOut": "Cerrar sesión",
+    "roleAdmin": "Administrador",
+    "roleStudent": "Alumno"
+  },
+  "Footer": {
+    "copyright": "© {year} Centro de Lenguas • Universidad Panamericana.",
+    "exams": "Exámenes",
+    "faqs": "FAQs"
+  },
+  "UserMenu": {},
+  "LanguageSwitcher": {
+    "switchToEnglish": "Cambiar a inglés",
+    "switchToSpanish": "Cambiar a español"
+  },
+  "HomePage": {
+    "eyebrow": "Centro de Lenguas • Universidad Panamericana",
+    "heroTitle": "Inscríbete a tu examen TOEIC o TOEFL",
+    "heroSubtitle": "Consulta las fechas disponibles y gestiona tus inscripciones y resultados desde tu panel de alumno.",
+    "goToDashboard": "Ir a mi panel de alumno",
+    "upcomingExams": "Próximos exámenes",
+    "viewAll": "Ver todos",
+    "noExamsScheduled": "No hay exámenes programados por el momento",
+    "faqsTitle": "Preguntas frecuentes"
+  },
+  "ExamDateCard": {
+    "examDate": "Examen: {date}",
+    "registrationWindow": "Inscripciones: {start} al {end}",
+    "viewDetail": "Ver detalle"
+  },
+  "ExamsListPage": {
+    "title": "Próximos exámenes",
+    "subtitle": "Consulta las fechas disponibles de TOEIC y TOEFL y sus periodos de inscripción.",
+    "noExamsScheduled": "No hay exámenes programados por el momento"
+  },
+  "ExamDatePage": {
+    "examDateLabel": "Fecha del examen",
+    "registrationPeriod": "Periodo de inscripción",
+    "relevantInfo": "Información relevante",
+    "instructions": "Instrucciones",
+    "viewInMyDashboard": "Ver examen en mi panel",
+    "registerCta": "Inscribirme",
+    "payExam": "Pagar examen"
+  },
+  "StudentDashboard": {
+    "greeting": "Hola{name}",
+    "subtitle": "Este es tu panel de alumno del Centro de Lenguas.",
+    "nextExam": "Próximo examen",
+    "noUpcomingExams": "Sin exámenes próximos",
+    "approvedRegistrations": "Inscripciones aprobadas",
+    "passedExams": "Exámenes aprobados",
+    "yourNextExam": "Tu próximo examen",
+    "viewDetail": "Ver detalle",
+    "myExams": "Mis exámenes",
+    "noRegistrationsTitle": "Aún no tienes inscripciones",
+    "noRegistrationsDescription": "Explora los próximos exámenes disponibles y regístrate.",
+    "viewUpcomingExams": "Ver próximos exámenes →",
+    "passedWithScore": "Aprobado · {score}",
+    "notPassedWithScore": "No aprobado · {score}",
+    "resultPending": "Resultado pendiente",
+    "instructions": "Instrucciones"
+  },
+  "RegistrationPage": {
+    "title": "Inscripción • {examName} {termName} {termYear}",
+    "registrationOpeningSoon": "Las inscripciones para este examen aún no abren.",
+    "registrationClosed": "Las inscripciones para este examen ya cerraron."
+  },
+  "MyExamPage": {
+    "backToMyExams": "Volver a mis exámenes",
+    "registrationRejected": "Tu inscripción fue rechazada",
+    "examDate": "Fecha del examen: {date}",
+    "result": "Resultado",
+    "passed": "APROBADO",
+    "notPassed": "NO APROBADO",
+    "resultNotAvailable": "Tu resultado aún no está disponible.",
+    "submittedDocuments": "Documentos entregados"
+  },
+  "RegistrationForm": {
+    "name": "Nombre",
+    "institutionalEmail": "Correo institucional",
+    "studentId": "Matrícula",
+    "studentIdPlaceholder": "Ej. 0272150",
+    "studentIdAlreadyRegistered": "Tu matrícula ya está registrada. Si es incorrecta, contacta a un administrador.",
+    "requiredDocuments": "Documentos requeridos",
+    "confirmRegistration": "Confirmar inscripción"
+  },
+  "DocumentUpload": {
+    "invalidFileType": "Tipo de archivo no permitido. Usa PDF, JPG o PNG.",
+    "fileTooLarge": "El archivo no puede pesar más de 8 MB.",
+    "uploadFailed": "No pudimos subir el archivo. Intenta nuevamente.",
+    "change": "Cambiar",
+    "selectFile": "Seleccionar archivo"
+  },
+  "Faqs": {
+    "title": "Preguntas frecuentes",
+    "noFaqs": "Aún no hay preguntas frecuentes publicadas"
+  },
+  "Validation": {
+    "studentIdMinLength": "La matrícula debe tener al menos 4 caracteres.",
+    "studentIdMaxLength": "La matrícula no puede tener más de 20 caracteres.",
+    "studentIdInvalidChars": "La matrícula solo puede contener letras, números y guiones.",
+    "selectExamDate": "Selecciona una fecha de examen.",
+    "mustUploadAllDocuments": "Debes subir los 4 documentos requeridos."
+  },
+  "Errors": {
+    "examDateNotAvailable": "Esta fecha de examen ya no está disponible.",
+    "registrationNotOpenYet": "Las inscripciones para este examen aún no abren.",
+    "registrationClosed": "Las inscripciones para este examen ya cerraron.",
+    "alreadyRegistered": "Ya tienes una inscripción registrada para este examen.",
+    "invalidDocument": "Uno de los documentos subidos no es válido. Vuelve a intentarlo.",
+    "invalidFileType": "Tipo de archivo no permitido.",
+    "documentInvalidOrTooLarge": "Uno de los documentos subidos no es válido o excede el tamaño permitido.",
+    "generic": "Algo salió mal. Intenta nuevamente en unos momentos."
+  },
+  "Statuses": {
+    "PENDING": "Pendiente de aprobación",
+    "APPROVED": "Inscrito",
+    "REJECTED": "Rechazada",
+    "CANCELLED": "Cancelada",
+    "UPCOMING": "Inscripciones próximamente",
+    "OPEN": "Inscripciones abiertas",
+    "CLOSED": "Inscripciones cerradas"
+  },
+  "DocumentTypes": {
+    "PAYMENT_PROOF": "Comprobante de pago",
+    "UNIVERSITY_ID_FRONT": "Credencial de la universidad (frente)",
+    "INE_FRONT": "INE (frente)",
+    "INE_BACK": "INE (vuelta)"
+  },
+  "ExamType": {
+    "genericExam": "Examen"
+  }
+}

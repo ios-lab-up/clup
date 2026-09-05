@@ -1,0 +1,57 @@
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-clup}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-clup}
+      POSTGRES_DB: ${POSTGRES_DB:-clup}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      # Puerto expuesto en el host (izquierda) : puerto interno de Postgres (derecha).
+      # Cambia DB_PORT en .env para evitar choques con un Postgres local en 5432.
+      - "${DB_PORT:-5432}:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-clup}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    env_file: .env
+    environment:
+      # Sobrescribe el DATABASE_URL del .env: dentro de la red de Docker la base
+      # se alcanza por el hostname del servicio (`db`), no por localhost, y por
+      # el puerto interno 5432 (DB_PORT solo cambia el mapeo hacia el host).
+      DATABASE_URL: "postgresql://${POSTGRES_USER:-clup}:${POSTGRES_PASSWORD:-clup}@db:5432/${POSTGRES_DB:-clup}?schema=public"
+    ports:
+      - "3012:3000"
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 5s
+      start_period: 15s
+      retries: 3
+
+  cron:
+    build:
+      context: ./docker/cron
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    depends_on:
+      app:
+        condition: service_healthy
+    environment:
+      CRON_SECRET: ${CRON_SECRET}
+      CRON_TARGET_URL: "http://app:3000/api/cron/reminders"
+
+volumes:
+  pgdata:
