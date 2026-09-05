@@ -36,10 +36,10 @@ services:
       - "3012:3000"
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://localhost:3000/health"]
-      interval: 30s
+      interval: 20s
       timeout: 5s
-      start_period: 15s
-      retries: 3
+      start_period: 45s
+      retries: 5
 
   cron:
     build:
@@ -47,8 +47,7 @@ services:
       dockerfile: Dockerfile
     restart: unless-stopped
     depends_on:
-      app:
-        condition: service_healthy
+      - app
     environment:
       CRON_SECRET: ${CRON_SECRET}
       CRON_TARGET_URL: "http://app:3000/api/cron/reminders"

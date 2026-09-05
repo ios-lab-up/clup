@@ -30,6 +30,9 @@ ENV NODE_ENV=production
 COPY --from=builder /app ./
 
 EXPOSE 3000
-HEALTHCHECK --interval=30s --timeout=5s --start-period=15s --retries=3 \
+# start-period generoso: el entrypoint corre `prisma migrate deploy` antes de
+# levantar Next, y en el primer deploy (o con la DB fría) puede tardar más
+# que en un entorno local ya migrado.
+HEALTHCHECK --interval=20s --timeout=5s --start-period=45s --retries=5 \
   CMD wget -qO- http://localhost:3000/health || exit 1
 ENTRYPOINT ["docker/app/entrypoint.sh"]
