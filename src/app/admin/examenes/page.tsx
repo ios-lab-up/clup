@@ -25,6 +25,7 @@ export default async function AdminExamsPage() {
             passingScores: exam.passingScores.map((row) => ({
               id: row.id,
               scope: row.careerId ? ("CAREER" as const) : ("FACULTY" as const),
+              targetId: row.careerId ?? row.facultyId ?? "",
               targetName: row.career?.name ?? row.faculty?.name ?? "—",
               score: row.score,
             })),

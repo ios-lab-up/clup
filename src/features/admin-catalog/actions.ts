@@ -10,7 +10,7 @@ import { careerSchema, facultySchema } from "@/lib/validations/catalog.schema";
 import type { ActionResult } from "@/types";
 
 function revalidateCatalog() {
-  revalidatePath("/admin/catalogo");
+  revalidatePath("/admin/configuracion");
   revalidatePath("/admin/examenes");
   revalidatePath("/onboarding");
 }

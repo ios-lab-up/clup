@@ -21,6 +21,15 @@ export const termSchema = z.object({
   active: z.coerce.boolean().default(true),
 });
 
+export const examOverrideInputSchema = z.object({
+  scope: z.enum(["FACULTY", "CAREER"], { error: "Selecciona un ámbito." }),
+  targetId: z.string().min(1, { error: "Selecciona la facultad o carrera." }),
+  score: z.coerce
+    .number({ error: "El puntaje debe ser un número." })
+    .int()
+    .min(0, { error: "El puntaje no puede ser negativo." }),
+});
+
 export const examSchema = z.object({
   type: z.enum(["TOEIC", "TOEFL", "CUSTOM"], { error: "Selecciona un tipo de examen." }),
   name: z.string().trim().min(1, { error: "El nombre es requerido." }),
@@ -30,4 +39,5 @@ export const examSchema = z.object({
     .int()
     .min(0, { error: "El passing score no puede ser negativo." }),
   active: z.coerce.boolean().default(true),
+  overrides: z.array(examOverrideInputSchema).default([]),
 });

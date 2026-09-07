@@ -24,6 +24,7 @@ export default async function PublicLayout({ children }: { children: React.React
         labels={{
           signIn: t("signIn"),
           myPanel: t("myPanel"),
+          profile: t("profile"),
           signOut: t("signOut"),
           roleAdmin: t("roleAdmin"),
           roleStudent: t("roleStudent"),

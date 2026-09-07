@@ -8,6 +8,7 @@ import { LanguageSwitcher } from "@/components/layout/LanguageSwitcher";
 interface HeaderLabels {
   signIn: string;
   myPanel: string;
+  profile: string;
   signOut: string;
   roleAdmin: string;
   roleStudent: string;
@@ -16,6 +17,7 @@ interface HeaderLabels {
 const DEFAULT_LABELS: HeaderLabels = {
   signIn: "Sign in",
   myPanel: "My dashboard",
+  profile: "Profile",
   signOut: "Sign out",
   roleAdmin: "Administrator",
   roleStudent: "Student",

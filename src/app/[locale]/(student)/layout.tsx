@@ -17,6 +17,7 @@ export default async function StudentLayout({ children }: { children: React.Reac
         labels={{
           signIn: t("signIn"),
           myPanel: t("myPanel"),
+          profile: t("profile"),
           signOut: t("signOut"),
           roleAdmin: t("roleAdmin"),
           roleStudent: t("roleStudent"),

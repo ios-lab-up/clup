@@ -10,6 +10,7 @@ import { Link as LocaleLink } from "@/i18n/navigation";
 
 interface UserMenuLabels {
   myPanel: string;
+  profile: string;
   signOut: string;
   roleAdmin: string;
   roleStudent: string;
@@ -81,14 +82,24 @@ export function UserMenu({ name, email, imageUrl, role, labels }: UserMenuProps)
               {labels.myPanel}
             </NextLink>
           ) : (
-            <LocaleLink
-              href="/dashboard"
-              onClick={() => setOpen(false)}
-              className="flex items-center gap-2 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50"
-            >
-              <LayoutDashboard className="h-4 w-4 text-gray-500" />
-              {labels.myPanel}
-            </LocaleLink>
+            <>
+              <LocaleLink
+                href="/dashboard"
+                onClick={() => setOpen(false)}
+                className="flex items-center gap-2 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50"
+              >
+                <LayoutDashboard className="h-4 w-4 text-gray-500" />
+                {labels.myPanel}
+              </LocaleLink>
+              <LocaleLink
+                href="/perfil"
+                onClick={() => setOpen(false)}
+                className="flex items-center gap-2 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50"
+              >
+                <User className="h-4 w-4 text-gray-500" />
+                {labels.profile}
+              </LocaleLink>
+            </>
           )}
           <button
             type="button"

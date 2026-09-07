@@ -7,7 +7,7 @@
  *  - `prisma/seed.ts` (DBs locales frescas, upserts idempotentes).
  *
  * Después del primer deploy la DB es la fuente de verdad: los cambios se hacen
- * desde `/admin/catalogo`, no editando esta lista.
+ * desde Settings › Catalog en el admin, no editando esta lista.
  *
  * Nombres tal cual el catálogo oficial (MAYÚSCULAS, "LICENCIATURA EN …"). Las
  * variantes de plan ("(Plan 20)", "CD. UP") se colapsan a una sola carrera.

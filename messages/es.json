@@ -2,9 +2,20 @@
   "Header": {
     "signIn": "Iniciar sesión",
     "myPanel": "Mi panel",
+    "profile": "Perfil",
     "signOut": "Cerrar sesión",
     "roleAdmin": "Administrador",
     "roleStudent": "Alumno"
+  },
+  "Profile": {
+    "title": "Mi perfil",
+    "subtitle": "Revisa tus datos y actualiza tu carrera si cambió.",
+    "name": "Nombre",
+    "institutionalEmail": "Correo institucional",
+    "studentId": "Matrícula",
+    "studentIdLocked": "Tu matrícula no se puede editar aquí. Si es incorrecta, contacta a un administrador.",
+    "save": "Guardar cambios",
+    "saved": "Cambios guardados."
   },
   "Footer": {
     "copyright": "© {year} Centro de Lenguas • Universidad Panamericana.",

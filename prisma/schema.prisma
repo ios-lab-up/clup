@@ -95,7 +95,7 @@ model Exam {
 }
 
 // Catálogo institucional: facultad/escuela -> carreras. Editable desde
-// /admin/catalogo. Se siembra en la migración inicial del catálogo.
+// Settings › Catalog en el admin. Se siembra en la migración inicial del catálogo.
 model Faculty {
   id         String   @id @default(cuid())
   name       String   @unique

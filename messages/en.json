@@ -2,9 +2,20 @@
   "Header": {
     "signIn": "Sign in",
     "myPanel": "My dashboard",
+    "profile": "Profile",
     "signOut": "Sign out",
     "roleAdmin": "Administrator",
     "roleStudent": "Student"
+  },
+  "Profile": {
+    "title": "My profile",
+    "subtitle": "Review your details and update your program if it changed.",
+    "name": "Name",
+    "institutionalEmail": "Institutional email",
+    "studentId": "Student ID",
+    "studentIdLocked": "Your student ID can't be edited here. If it's wrong, contact an administrator.",
+    "save": "Save changes",
+    "saved": "Changes saved."
   },
   "Footer": {
     "copyright": "© {year} Centro de Lenguas • Universidad Panamericana.",
