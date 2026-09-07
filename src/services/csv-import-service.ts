@@ -2,7 +2,11 @@ import type { PrismaClient } from "@/generated/prisma/client";
 import { AppError } from "@/lib/errors";
 import { parseCsv } from "@/lib/csv";
 import { CSV_RESULTS_REQUIRED_HEADERS, csvResultRowSchema } from "@/lib/validations/csv-results.schema";
-import { computePassed } from "@/services/result-service";
+import {
+  buildPassingScoreContext,
+  computePassed,
+  resolvePassingScore,
+} from "@/services/result-service";
 
 export type CsvImportRowStatus = "ok" | "overwrite" | "error";
 
@@ -10,7 +14,13 @@ export interface CsvImportRowPreview {
   index: number;
   studentId: string;
   studentName?: string;
+  faculty?: string;
+  career?: string;
   score: number;
+  /** Puntaje mínimo que aplica a este alumno (carrera → facultad → default). */
+  appliedScore?: number;
+  /** El alumno no tiene carrera registrada; se usó el mínimo general del examen. */
+  noCareer?: boolean;
   status: CsvImportRowStatus;
   message?: string;
   registrationId?: string;
@@ -28,6 +38,9 @@ export interface CsvImportPreview {
  * el admin debe confirmar explícitamente antes de que commitResultsImport
  * persista los cambios. Solo requiere la fecha de examen: term/examen se
  * derivan de ella, así no hay selects encadenados que puedan quedar vacíos.
+ *
+ * El puntaje mínimo para aprobar se resuelve por alumno según su carrera
+ * (carrera → facultad de esa carrera → default general del examen).
  */
 export async function previewResultsImport(
   db: PrismaClient,
@@ -51,6 +64,8 @@ export async function previewResultsImport(
     throw new AppError("La fecha de examen seleccionada ya no existe.");
   }
 
+  const passingScoreContext = await buildPassingScoreContext(db, examDate.examId);
+
   const preview: CsvImportRowPreview[] = [];
 
   for (const parsedRow of rows) {
@@ -68,7 +83,10 @@ export async function previewResultsImport(
 
     const { student_id: studentId, score } = parsed.data;
 
-    const profile = await db.profile.findUnique({ where: { studentId } });
+    const profile = await db.profile.findUnique({
+      where: { studentId },
+      include: { career: { include: { faculty: { select: { name: true } } } } },
+    });
     if (!profile) {
       preview.push({
         index: parsedRow.index,
@@ -85,12 +103,18 @@ export async function previewResultsImport(
       include: { result: true },
     });
 
+    const baseRow = {
+      index: parsedRow.index,
+      studentId,
+      studentName: profile.name,
+      faculty: profile.career?.faculty.name,
+      career: profile.career?.name,
+      score,
+    };
+
     if (!registration) {
       preview.push({
-        index: parsedRow.index,
-        studentId,
-        studentName: profile.name,
-        score,
+        ...baseRow,
         status: "error",
         message: "Sin inscripción en este examen/fecha.",
       });
@@ -99,40 +123,27 @@ export async function previewResultsImport(
 
     if (registration.status !== "APPROVED") {
       preview.push({
-        index: parsedRow.index,
-        studentId,
-        studentName: profile.name,
-        score,
+        ...baseRow,
         status: "error",
         message: "Inscripción no aprobada.",
       });
       continue;
     }
 
-    const passed = computePassed(score, examDate.exam.passingScore);
+    const appliedScore = resolvePassingScore(passingScoreContext, profile.careerId);
+    const passed = computePassed(score, appliedScore);
+    const noCareer = !profile.careerId;
 
-    if (registration.result) {
-      preview.push({
-        index: parsedRow.index,
-        studentId,
-        studentName: profile.name,
-        score,
-        status: "overwrite",
-        registrationId: registration.id,
-        passed,
-        previousScore: registration.result.score,
-      });
-    } else {
-      preview.push({
-        index: parsedRow.index,
-        studentId,
-        studentName: profile.name,
-        score,
-        status: "ok",
-        registrationId: registration.id,
-        passed,
-      });
-    }
+    preview.push({
+      ...baseRow,
+      appliedScore,
+      noCareer,
+      passed,
+      registrationId: registration.id,
+      status: registration.result ? "overwrite" : "ok",
+      ...(registration.result ? { previousScore: registration.result.score } : {}),
+      ...(noCareer ? { message: "Sin carrera registrada — se usó el mínimo general." } : {}),
+    });
   }
 
   for (const message of errors) {

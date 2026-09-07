@@ -11,10 +11,11 @@ import { captureResult, publishResult } from "@/features/admin-results/actions";
 interface ResultFormProps {
   registrationId: string;
   passingScore: number;
+  careerName: string | null;
   result: { score: number; passed: boolean; published: boolean } | null;
 }
 
-export function ResultForm({ registrationId, passingScore, result }: ResultFormProps) {
+export function ResultForm({ registrationId, passingScore, careerName, result }: ResultFormProps) {
   const router = useRouter();
   const [score, setScore] = useState(result?.score?.toString() ?? "");
   const [pending, setPending] = useState(false);
@@ -48,7 +49,9 @@ export function ResultForm({ registrationId, passingScore, result }: ResultFormP
 
   return (
     <div className="space-y-4">
-      <p className="text-sm text-gray-500">Exam passing score: {passingScore}</p>
+      <p className="text-sm text-gray-500">
+        Passing minimum for this student{careerName ? ` (${careerName})` : ""}: {passingScore}
+      </p>
 
       <form onSubmit={handleCapture} className="flex items-end gap-3">
         <div>

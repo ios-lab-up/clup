@@ -3,14 +3,17 @@ import { REQUIRED_DOCUMENT_TYPES } from "@/lib/constants";
 import { documentTypeSchema } from "@/lib/validations/document.schema";
 
 interface SubmitRegistrationMessages {
-  studentIdMinLength: string;
-  studentIdMaxLength: string;
-  studentIdInvalidChars: string;
   selectExamDate: string;
   mustUploadAllDocuments: string;
 }
 
-export function buildStudentIdSchema(messages: Pick<SubmitRegistrationMessages, "studentIdMinLength" | "studentIdMaxLength" | "studentIdInvalidChars">) {
+interface StudentIdMessages {
+  studentIdMinLength: string;
+  studentIdMaxLength: string;
+  studentIdInvalidChars: string;
+}
+
+export function buildStudentIdSchema(messages: StudentIdMessages) {
   return z
     .string()
     .trim()
@@ -31,7 +34,6 @@ export const uploadedDocumentSchema = z.object({
 export function buildSubmitRegistrationSchema(messages: SubmitRegistrationMessages) {
   return z.object({
     examDateId: z.string().min(1, { error: messages.selectExamDate }),
-    studentId: buildStudentIdSchema(messages),
     documents: z
       .array(uploadedDocumentSchema)
       .refine(

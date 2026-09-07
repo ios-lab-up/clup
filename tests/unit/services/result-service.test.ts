@@ -25,19 +25,28 @@ describe("computePassed", () => {
 });
 
 describe("captureResult", () => {
-  it("computes passed from the exam date's passingScore and upserts the result", async () => {
+  it("computes passed from the resolved passing score and upserts the result", async () => {
     db.registration.findUnique.mockResolvedValue({
       id: "reg-1",
-      examDate: { exam: { passingScore: 700 } },
+      profile: { careerId: "car-ciber" },
+      examDate: { examId: "exam-1" },
     } as never);
-    db.result.upsert.mockResolvedValue({ score: 785, passed: true } as never);
+    db.exam.findUnique.mockResolvedValue({ passingScore: 700 } as never);
+    db.examPassingScore.findMany.mockResolvedValue([
+      { facultyId: null, careerId: "car-ciber", score: 650 },
+    ] as never);
+    db.career.findMany.mockResolvedValue([
+      { id: "car-ciber", facultyId: "fac-ing" },
+    ] as never);
+    db.result.upsert.mockResolvedValue({ score: 660, passed: true } as never);
 
-    const result = await captureResult(db, { registrationId: "reg-1", score: 785 });
+    // 660 reprobaría con el default 700, pero pasa con el override de carrera (650).
+    const result = await captureResult(db, { registrationId: "reg-1", score: 660 });
 
-    expect(result).toEqual({ score: 785, passed: true });
+    expect(result).toEqual({ score: 660, passed: true });
     expect(db.result.upsert).toHaveBeenCalledWith(
       expect.objectContaining({
-        create: expect.objectContaining({ registrationId: "reg-1", score: 785, passed: true }),
+        create: expect.objectContaining({ registrationId: "reg-1", score: 660, passed: true }),
       }),
     );
   });

@@ -50,7 +50,7 @@ export async function getRegistrationDetail(registrationId: string) {
   const registration = await prisma.registration.findUnique({
     where: { id: registrationId },
     include: {
-      profile: true,
+      profile: { include: { career: { include: { faculty: { select: { name: true } } } } } },
       examDate: { include: { exam: true, term: true } },
       result: true,
       documents: true,

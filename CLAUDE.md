@@ -26,7 +26,8 @@ Plataforma completa (no un prototipo) para el Centro de Lenguas de la Universida
 
 ## Decisiones de producto que ya se tomaron (no las re-abras sin que el usuario lo pida)
 
-- **`Exam.passingScore`**, no en `ExamDate` — el mismo examen puede repetirse en varias fechas con el mismo passing score; se define al crear/editar el examen.
+- **Puntaje mínimo jerárquico**: `Exam.passingScore` es el default general; `ExamPassingScore` lo sobreescribe por facultad o por carrera. Al calificar se resuelve carrera → facultad → default (`resolvePassingScore` en `src/services/result-service.ts`). No hay `ExamDate.passingScore`. El catálogo `Faculty`/`Career` se edita en `/admin/catalogo` y se siembra en la migración `*_catalog_and_onboarding` (generada desde `src/lib/catalog-data.ts`).
+- **Onboarding obligatorio** (`Profile.onboardedAt`): primer login → `/onboarding` (fuera del esquema de locale), captura matrícula (autodetectada del correo `NNNN@up.edu.mx`) + carrera. Gate = `requireOnboarding()`. `Faculty.isExternal` = bucket "Docente / Externo" sin carrera.
 - **`ExamType` incluye `CUSTOM`** — al elegirlo se pide un nombre libre (ej. "IELTS"). `examTypeLabel()` (`src/lib/exam-type.ts`) siempre usa el nombre del examen para `CUSTOM`, nunca la palabra "CUSTOM".
 - **No hay página `/admin/fechas` (lista plana)**. Las fechas de examen viven **dentro de Terms**: `/admin/terms` es una sola página con tabs (uno por term, sin fondo blanco) — click en un tab muestra info+acciones del term y, debajo, sus fechas. `/admin/fechas/nueva` y `/admin/fechas/[id]` siguen existiendo como los forms de crear/editar, pero solo se llega a ellos desde ahí, y regresan a `/admin/terms?termId=...` (mismo tab seleccionado).
 - **Estado de inscripción "APPROVED" se muestra como "Inscrito"** en toda la UI (no "Aprobado" — eso es el resultado del examen, otra cosa).

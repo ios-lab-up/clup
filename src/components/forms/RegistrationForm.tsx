@@ -14,18 +14,19 @@ interface RegistrationFormProps {
   examDateId: string;
   studentName: string;
   studentEmail: string;
-  existingStudentId: string | null;
+  studentId: string;
+  career: string | null;
 }
 
 export function RegistrationForm({
   examDateId,
   studentName,
   studentEmail,
-  existingStudentId,
+  studentId,
+  career,
 }: RegistrationFormProps) {
   const t = useTranslations("RegistrationForm");
   const router = useRouter();
-  const [studentId, setStudentId] = useState(existingStudentId ?? "");
   const [documents, setDocuments] = useState<Record<string, UploadedDocument>>({});
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -34,7 +35,7 @@ export function RegistrationForm({
     () => REQUIRED_DOCUMENT_TYPES.every((type) => documents[type]),
     [documents],
   );
-  const canSubmit = allDocumentsUploaded && studentId.trim().length >= 4 && !submitting;
+  const canSubmit = allDocumentsUploaded && !submitting;
 
   async function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
@@ -43,7 +44,6 @@ export function RegistrationForm({
 
     const result = await submitRegistration({
       examDateId,
-      studentId,
       documents: Object.values(documents),
     });
 
@@ -70,17 +70,15 @@ export function RegistrationForm({
         </div>
       </div>
 
-      <div>
-        <Label htmlFor="studentId">{t("studentId")}</Label>
-        <Input
-          id="studentId"
-          value={studentId}
-          onChange={(event) => setStudentId(event.target.value)}
-          disabled={Boolean(existingStudentId)}
-          placeholder={t("studentIdPlaceholder")}
-          required
-        />
-        {existingStudentId && <p className="mt-1 text-xs text-gray-500">{t("studentIdAlreadyRegistered")}</p>}
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <div>
+          <Label>{t("studentId")}</Label>
+          <Input value={studentId} disabled />
+        </div>
+        <div>
+          <Label>{t("career")}</Label>
+          <Input value={career ?? t("careerExternal")} disabled />
+        </div>
       </div>
 
       <div>

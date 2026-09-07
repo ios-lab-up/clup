@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { getTranslations } from "next-intl/server";
-import { requireAuth } from "@/lib/auth/guards";
+import { requireOnboarding } from "@/lib/auth/guards";
 import { prisma } from "@/lib/db/prisma";
 import { getStorage } from "@/lib/storage";
 import { sendMail } from "@/lib/mail/send-mail";
@@ -26,7 +26,7 @@ export async function createDocumentUploadPolicy(input: unknown): Promise<Action
   ]);
 
   try {
-    const profile = await requireAuth();
+    const profile = await requireOnboarding();
     const schema = buildUploadPolicyRequestSchema({
       invalidFileType: tDocumentUpload("invalidFileType"),
       fileTooLarge: tDocumentUpload("fileTooLarge"),
@@ -54,11 +54,9 @@ export async function submitRegistration(input: unknown): Promise<ActionResult<{
   ]);
 
   try {
-    const profile = await requireAuth();
+    // La matrícula y la carrera ya se capturaron en el onboarding obligatorio.
+    const profile = await requireOnboarding();
     const schema = buildSubmitRegistrationSchema({
-      studentIdMinLength: tValidation("studentIdMinLength"),
-      studentIdMaxLength: tValidation("studentIdMaxLength"),
-      studentIdInvalidChars: tValidation("studentIdInvalidChars"),
       selectExamDate: tValidation("selectExamDate"),
       mustUploadAllDocuments: tValidation("mustUploadAllDocuments"),
     });
@@ -81,15 +79,6 @@ export async function submitRegistration(input: unknown): Promise<ActionResult<{
       if (!metadata || metadata.size > DOCUMENT_MAX_SIZE_BYTES) {
         throw new AppError(tErrors("documentInvalidOrTooLarge"));
       }
-    }
-
-    // La matrícula se captura una sola vez; en inscripciones posteriores se
-    // conserva la ya registrada (solo un admin puede corregirla).
-    if (!profile.studentId) {
-      await prisma.profile.update({
-        where: { id: profile.id },
-        data: { studentId: parsed.studentId },
-      });
     }
 
     const registration = await createRegistration(

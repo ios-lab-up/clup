@@ -1,5 +1,6 @@
 import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient, ExamType } from "../src/generated/prisma/client";
+import { CATALOG } from "../src/lib/catalog-data";
 
 const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL });
 const prisma = new PrismaClient({ adapter });
@@ -192,6 +193,34 @@ async function main() {
       update: {},
       create: setting,
     });
+  }
+
+  // Catálogo institucional (facultades + carreras). Mismo contenido que la
+  // migración *_catalog_and_onboarding; aquí para DBs locales recién creadas.
+  for (const faculty of CATALOG) {
+    await prisma.faculty.upsert({
+      where: { id: faculty.id },
+      update: {},
+      create: {
+        id: faculty.id,
+        name: faculty.name,
+        slug: faculty.slug,
+        order: faculty.order,
+        isExternal: faculty.isExternal,
+      },
+    });
+    for (const career of faculty.careers) {
+      await prisma.career.upsert({
+        where: { id: career.id },
+        update: {},
+        create: {
+          id: career.id,
+          facultyId: faculty.id,
+          name: career.name,
+          order: career.order,
+        },
+      });
+    }
   }
 
   console.log("Seed completado.");

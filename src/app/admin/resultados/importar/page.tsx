@@ -19,7 +19,11 @@ export default async function ImportarResultadosPage() {
   return (
     <div>
       <h1 className="text-2xl font-bold text-gray-900">Import results</h1>
-      <p className="mt-1 text-gray-600">Bulk-upload scores via CSV (columns: student_id, score).</p>
+      <p className="mt-1 text-gray-600">
+        Bulk-upload scores via CSV (columns: student_id, score). The passing minimum is resolved
+        per student from their program (program override, then faculty override, then the exam
+        default).
+      </p>
 
       <div className="mt-6">
         <CsvImportWizard examDates={examDateOptions} />

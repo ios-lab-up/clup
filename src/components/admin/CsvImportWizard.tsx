@@ -146,12 +146,14 @@ export function CsvImportWizard({ examDates }: { examDates: ExamDateOption[] }) 
             Check that the scores match each student before confirming.
           </p>
 
-          <div className="mt-4 max-h-96 overflow-y-auto">
+          <div className="mt-4 max-h-96 overflow-x-auto overflow-y-auto">
             <Table>
               <TableHead>
                 <TableRow>
                   <TableHeaderCell>Student</TableHeaderCell>
+                  <TableHeaderCell>Program</TableHeaderCell>
                   <TableHeaderCell>Score</TableHeaderCell>
+                  <TableHeaderCell>Minimum</TableHeaderCell>
                   <TableHeaderCell>Result</TableHeaderCell>
                   <TableHeaderCell>Status</TableHeaderCell>
                   <TableHeaderCell>Detail</TableHeaderCell>
@@ -163,7 +165,20 @@ export function CsvImportWizard({ examDates }: { examDates: ExamDateOption[] }) 
                     <TableCell className="font-medium text-gray-900">
                       {row.studentName ?? row.studentId}
                     </TableCell>
+                    <TableCell className="text-sm text-gray-600">
+                      {row.career ? (
+                        <>
+                          {row.career}
+                          {row.faculty ? <span className="text-gray-400"> • {row.faculty}</span> : null}
+                        </>
+                      ) : row.noCareer ? (
+                        <span className="text-amber-600">No program on file</span>
+                      ) : (
+                        ""
+                      )}
+                    </TableCell>
                     <TableCell>{row.score}</TableCell>
+                    <TableCell className="text-sm text-gray-600">{row.appliedScore ?? ""}</TableCell>
                     <TableCell>
                       {row.passed === undefined ? (
                         "•"

@@ -23,6 +23,18 @@ export async function requireAdmin(): Promise<Profile> {
   return profile;
 }
 
+/**
+ * Exige que el alumno haya completado la encuesta inicial obligatoria
+ * (matrícula + carrera). Mientras `onboardedAt` sea null lo regresa a
+ * `/onboarding`. Los admins no pasan por aquí. Se usa en el layout del área
+ * de alumno y en las Server Actions de inscripción.
+ */
+export async function requireOnboarding(): Promise<Profile> {
+  const profile = await requireAuth();
+  if (profile.role === "STUDENT" && !profile.onboardedAt) redirect("/onboarding");
+  return profile;
+}
+
 interface DocumentOwnerCheck {
   registration: { profileId: string };
 }

@@ -1,4 +1,6 @@
+import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
+import { getCurrentProfile } from "@/lib/auth/current-profile";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 
@@ -8,6 +10,11 @@ import { Footer } from "@/components/layout/Footer";
 export const dynamic = "force-dynamic";
 
 export default async function PublicLayout({ children }: { children: React.ReactNode }) {
+  // Un alumno logueado que aún no completa el onboarding no avanza a ningún
+  // lado — ni siquiera al sitio público — hasta contestarlo. Anónimos = null.
+  const profile = await getCurrentProfile();
+  if (profile?.role === "STUDENT" && !profile.onboardedAt) redirect("/onboarding");
+
   const t = await getTranslations("Header");
 
   return (

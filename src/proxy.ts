@@ -17,7 +17,7 @@ const intlMiddleware = createIntlMiddleware(routing);
 // de abajo, para que el healthcheck de Docker/Dokploy nunca dependa de que
 // Clerk esté bien configurado (una env var de Clerk mala en el host no debe
 // poder tumbar el healthcheck).
-const LOCALE_EXCLUDED_PREFIXES = ["/admin", "/sign-in", "/api", "/trpc"];
+const LOCALE_EXCLUDED_PREFIXES = ["/admin", "/sign-in", "/onboarding", "/api", "/trpc"];
 
 export default clerkMiddleware((_auth, req) => {
   const { pathname } = req.nextUrl;

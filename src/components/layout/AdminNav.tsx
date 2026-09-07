@@ -10,6 +10,7 @@ const NAV_ITEMS = [
   // examen" en /admin/terms/[id]), por eso /admin/fechas también activa esta.
   { href: "/admin/terms", label: "Terms", alsoActiveOn: ["/admin/fechas"] },
   { href: "/admin/examenes", label: "Exams" },
+  { href: "/admin/catalogo", label: "Catalog" },
   { href: "/admin/inscripciones", label: "Registrations" },
   { href: "/admin/resultados", label: "Results" },
   { href: "/admin/faqs", label: "FAQs" },

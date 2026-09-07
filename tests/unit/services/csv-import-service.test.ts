@@ -12,6 +12,10 @@ const examDate = { id: examDateId, termId: "term-1", examId: "exam-1", exam: { p
 beforeEach(() => {
   mockReset(db);
   db.examDate.findUnique.mockResolvedValue(examDate as never);
+  // buildPassingScoreContext: sin overrides -> todos caen al default 700.
+  db.exam.findUnique.mockResolvedValue({ passingScore: 700 } as never);
+  db.examPassingScore.findMany.mockResolvedValue([] as never);
+  db.career.findMany.mockResolvedValue([] as never);
 });
 
 describe("previewResultsImport", () => {
@@ -100,6 +104,63 @@ describe("previewResultsImport", () => {
       studentName: "Ana",
     });
     expect(result.summary).toEqual({ ok: 1, overwrite: 0, error: 0 });
+  });
+
+  it("resolves the passing score from the student's career override", async () => {
+    db.exam.findUnique.mockResolvedValue({ passingScore: 700 } as never);
+    db.examPassingScore.findMany.mockResolvedValue([
+      { facultyId: null, careerId: "car-ciber", score: 650 },
+    ] as never);
+    db.career.findMany.mockResolvedValue([
+      { id: "car-ciber", facultyId: "fac-ing" },
+    ] as never);
+    db.profile.findUnique.mockResolvedValue({
+      id: "profile-1",
+      name: "Ana",
+      careerId: "car-ciber",
+      career: { name: "Ciberseguridad", faculty: { name: "Ingeniería" } },
+    } as never);
+    db.registration.findUnique.mockResolvedValue({
+      id: "reg-1",
+      status: "APPROVED",
+      result: null,
+    } as never);
+
+    const result = await previewResultsImport(db, examDateId, "student_id,score\n0272150,660");
+
+    // 660 reprobaría con el default 700, pero pasa con el override de carrera (650).
+    expect(result.rows[0]).toMatchObject({
+      status: "ok",
+      passed: true,
+      appliedScore: 650,
+      career: "Ciberseguridad",
+      faculty: "Ingeniería",
+      noCareer: false,
+    });
+  });
+
+  it("flags rows for students without a career but still imports them at the general minimum", async () => {
+    db.profile.findUnique.mockResolvedValue({
+      id: "profile-1",
+      name: "Prof. Iñaki",
+      careerId: null,
+      career: null,
+    } as never);
+    db.registration.findUnique.mockResolvedValue({
+      id: "reg-1",
+      status: "APPROVED",
+      result: null,
+    } as never);
+
+    const result = await previewResultsImport(db, examDateId, "student_id,score\nDOC-1,720");
+
+    expect(result.rows[0]).toMatchObject({
+      status: "ok",
+      passed: true,
+      appliedScore: 700,
+      noCareer: true,
+      message: "Sin carrera registrada — se usó el mínimo general.",
+    });
   });
 });
 

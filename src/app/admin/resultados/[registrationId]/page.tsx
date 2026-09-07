@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { getRegistrationDetail } from "@/features/admin-registrations/queries";
+import { prisma } from "@/lib/db/prisma";
+import { buildPassingScoreContext, resolvePassingScore } from "@/services/result-service";
 import { Card, CardContent } from "@/components/ui/Card";
 import { ResultForm } from "@/components/admin/ResultForm";
 
@@ -11,6 +13,9 @@ interface PageProps {
 export default async function AdminResultDetailPage({ params }: PageProps) {
   const { registrationId } = await params;
   const registration = await getRegistrationDetail(registrationId);
+
+  const passingScoreContext = await buildPassingScoreContext(prisma, registration.examDate.examId);
+  const passingScore = resolvePassingScore(passingScoreContext, registration.profile.careerId);
 
   return (
     <div className="max-w-2xl">
@@ -27,7 +32,8 @@ export default async function AdminResultDetailPage({ params }: PageProps) {
         <CardContent>
           <ResultForm
             registrationId={registration.id}
-            passingScore={registration.examDate.exam.passingScore}
+            passingScore={passingScore}
+            careerName={registration.profile.career?.name ?? null}
             result={registration.result}
           />
         </CardContent>

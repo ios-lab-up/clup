@@ -43,17 +43,25 @@ model Profile {
   clerkUserId String?  @unique
   email       String   @unique
   name        String
-  // Matrícula institucional — se captura en la primera inscripción, se usa para
-  // resolver filas del CSV de carga masiva de resultados (instructions.md §23).
+  // Matrícula institucional — se captura en el onboarding del primer login, se
+  // usa para resolver filas del CSV de carga masiva de resultados (instructions.md §23).
   studentId   String?  @unique
+  // Carrera del alumno — se captura en el onboarding. Resuelve el puntaje mínimo
+  // aplicable al calificar (ver ExamPassingScore). Null para docentes/externos.
+  careerId    String?
+  // Marca de que el alumno completó la encuesta inicial obligatoria. Mientras
+  // sea null, requireOnboarding() lo regresa a /onboarding.
+  onboardedAt DateTime?
   role        Role     @default(STUDENT)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
+  career        Career?  @relation(fields: [careerId], references: [id], onDelete: SetNull)
   registrations Registration[]
   auditLogs     AuditLog[]
 
   @@index([role])
+  @@index([careerId])
 }
 
 model Term {
@@ -75,13 +83,73 @@ model Exam {
   type         ExamType
   name         String
   description  String?
-  // Puntaje mínimo para aprobar este examen. Editable desde administración.
+  // Puntaje mínimo GENERAL (default) para aprobar. Se puede sobreescribir por
+  // facultad o por carrera específica en ExamPassingScore. Editable desde admin.
   passingScore Int      @default(0)
   active       Boolean  @default(true)
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
-  examDates ExamDate[]
+  examDates     ExamDate[]
+  passingScores ExamPassingScore[]
+}
+
+// Catálogo institucional: facultad/escuela -> carreras. Editable desde
+// /admin/catalogo. Se siembra en la migración inicial del catálogo.
+model Faculty {
+  id         String   @id @default(cuid())
+  name       String   @unique
+  slug       String   @unique
+  order      Int      @default(0)
+  // Bucket "DOCENTE / EXTERNO": sin carreras, sin override de puntaje; a estos
+  // usuarios se les aplica el puntaje mínimo general del examen.
+  isExternal Boolean  @default(false)
+  active     Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  careers       Career[]
+  passingScores ExamPassingScore[]
+
+  @@index([order])
+}
+
+model Career {
+  id        String   @id @default(cuid())
+  facultyId String
+  name      String
+  order     Int      @default(0)
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  faculty       Faculty            @relation(fields: [facultyId], references: [id], onDelete: Restrict)
+  profiles      Profile[]
+  passingScores ExamPassingScore[]
+
+  @@unique([facultyId, name])
+  @@index([facultyId])
+}
+
+// Override del puntaje mínimo de un examen para una facultad o una carrera.
+// Exactamente uno de facultyId/careerId va poblado (CHECK en la migración).
+// Resolución al calificar: carrera exacta -> facultad de esa carrera -> Exam.passingScore.
+model ExamPassingScore {
+  id        String   @id @default(cuid())
+  examId    String
+  facultyId String?
+  careerId  String?
+  score     Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  exam    Exam     @relation(fields: [examId], references: [id], onDelete: Cascade)
+  faculty Faculty? @relation(fields: [facultyId], references: [id], onDelete: Cascade)
+  career  Career?  @relation(fields: [careerId], references: [id], onDelete: Cascade)
+
+  @@unique([examId, facultyId])
+  @@unique([examId, careerId])
+  @@index([examId])
 }
 
 model ExamDate {

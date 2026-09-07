@@ -1,12 +1,13 @@
 import { getTranslations } from "next-intl/server";
-import { requireAuth } from "@/lib/auth/guards";
+import { requireOnboarding } from "@/lib/auth/guards";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 
 export const dynamic = "force-dynamic";
 
 export default async function StudentLayout({ children }: { children: React.ReactNode }) {
-  await requireAuth();
+  // Regresa a /onboarding al alumno que aún no completa la encuesta inicial.
+  await requireOnboarding();
   const t = await getTranslations("Header");
 
   return (

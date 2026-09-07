@@ -6,20 +6,85 @@ export function computePassed(score: number, passingScore: number): boolean {
   return score >= passingScore;
 }
 
+/**
+ * Datos precargados para resolver el puntaje mínimo de un examen sin ir a la
+ * DB por cada alumno (lo usa el import masivo de CSV, fila por fila).
+ */
+export interface PassingScoreContext {
+  examDefault: number;
+  byCareerId: Map<string, number>;
+  byFacultyId: Map<string, number>;
+  careerFacultyId: Map<string, string>;
+}
+
+/**
+ * Puntaje mínimo aplicable a un alumno: carrera exacta → facultad de esa
+ * carrera → default general del examen. Docentes/externos (sin carrera) caen
+ * siempre al default.
+ */
+export function resolvePassingScore(
+  ctx: PassingScoreContext,
+  careerId: string | null | undefined,
+): number {
+  if (careerId) {
+    const careerScore = ctx.byCareerId.get(careerId);
+    if (careerScore !== undefined) return careerScore;
+
+    const facultyId = ctx.careerFacultyId.get(careerId);
+    if (facultyId) {
+      const facultyScore = ctx.byFacultyId.get(facultyId);
+      if (facultyScore !== undefined) return facultyScore;
+    }
+  }
+  return ctx.examDefault;
+}
+
+export async function buildPassingScoreContext(
+  db: PrismaClient,
+  examId: string,
+): Promise<PassingScoreContext> {
+  const [exam, overrides, careers] = await Promise.all([
+    db.exam.findUnique({ where: { id: examId }, select: { passingScore: true } }),
+    db.examPassingScore.findMany({
+      where: { examId },
+      select: { facultyId: true, careerId: true, score: true },
+    }),
+    db.career.findMany({ select: { id: true, facultyId: true } }),
+  ]);
+
+  if (!exam) throw new AppError("El examen no existe.");
+
+  const byCareerId = new Map<string, number>();
+  const byFacultyId = new Map<string, number>();
+  for (const override of overrides) {
+    if (override.careerId) byCareerId.set(override.careerId, override.score);
+    else if (override.facultyId) byFacultyId.set(override.facultyId, override.score);
+  }
+
+  const careerFacultyId = new Map(careers.map((career) => [career.id, career.facultyId]));
+
+  return { examDefault: exam.passingScore, byCareerId, byFacultyId, careerFacultyId };
+}
+
 export async function captureResult(
   db: PrismaClient,
   input: { registrationId: string; score: number },
 ) {
   const registration = await db.registration.findUnique({
     where: { id: input.registrationId },
-    include: { examDate: { include: { exam: true } } },
+    include: {
+      profile: { select: { careerId: true } },
+      examDate: { select: { examId: true } },
+    },
   });
 
   if (!registration) {
     throw new AppError("Inscripción no encontrada.");
   }
 
-  const passed = computePassed(input.score, registration.examDate.exam.passingScore);
+  const ctx = await buildPassingScoreContext(db, registration.examDate.examId);
+  const passingScore = resolvePassingScore(ctx, registration.profile.careerId);
+  const passed = computePassed(input.score, passingScore);
 
   return db.result.upsert({
     where: { registrationId: input.registrationId },

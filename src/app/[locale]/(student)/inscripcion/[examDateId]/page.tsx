@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { getLocale, getTranslations } from "next-intl/server";
-import { requireAuth } from "@/lib/auth/guards";
+import { requireOnboarding } from "@/lib/auth/guards";
 import { prisma } from "@/lib/db/prisma";
 import { getExamDateStatus } from "@/lib/exam-date-status";
 import { RegistrationForm } from "@/components/forms/RegistrationForm";
@@ -12,9 +12,16 @@ interface PageProps {
 }
 
 export default async function InscripcionPage({ params }: PageProps) {
-  const profile = await requireAuth();
+  const authProfile = await requireOnboarding();
   const { examDateId } = await params;
-  const [locale, t] = await Promise.all([getLocale(), getTranslations("RegistrationPage")]);
+  const [locale, t, profile] = await Promise.all([
+    getLocale(),
+    getTranslations("RegistrationPage"),
+    prisma.profile.findUniqueOrThrow({
+      where: { id: authProfile.id },
+      include: { career: { select: { name: true } } },
+    }),
+  ]);
 
   const examDate = await prisma.examDate.findUnique({
     where: { id: examDateId },
@@ -48,7 +55,8 @@ export default async function InscripcionPage({ params }: PageProps) {
             examDateId={examDate.id}
             studentName={profile.name}
             studentEmail={profile.email}
-            existingStudentId={profile.studentId}
+            studentId={profile.studentId ?? ""}
+            career={profile.career?.name ?? null}
           />
         </div>
       )}
