@@ -21,6 +21,7 @@ export async function sendTestReminderEmail(): Promise<ActionResult> {
       examDate: tomorrow,
       info: "Este es un correo de PRUEBA enviado desde Configuración.",
       instructions: "Preséntate 30 minutos antes con tu credencial e identificación oficial.",
+      minutesBefore: 1440,
     });
 
     const result = await sendMail({ to: admin.email, ...email });

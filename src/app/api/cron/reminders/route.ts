@@ -4,14 +4,7 @@ import type { NextRequest } from "next/server";
 import { prisma } from "@/lib/db/prisma";
 import { sendMail } from "@/lib/mail/send-mail";
 import { sendExamReminders } from "@/services/reminder-service";
-import { getSetting } from "@/features/content/queries";
 import { CRON_SECRET_HEADER } from "@/lib/constants";
-
-async function resolveReminderDaysBefore(): Promise<number> {
-  const raw = await getSetting("reminder_days_before");
-  const parsed = raw ? Number.parseInt(raw, 10) : NaN;
-  return Number.isInteger(parsed) && parsed > 0 ? parsed : 1;
-}
 
 function isAuthorized(request: NextRequest): boolean {
   const expected = process.env.CRON_SECRET;
@@ -26,16 +19,16 @@ function isAuthorized(request: NextRequest): boolean {
 }
 
 /**
- * Invocado periódicamente (cada hora) por el contenedor `cron` de
- * docker-compose. Idempotente: el ReminderLog garantiza que cada inscripción
- * reciba el recordatorio una sola vez, así que llamarlo de más no hace daño.
+ * Invocado periódicamente (cada REMINDER_CRON_INTERVAL_MINUTES, ver
+ * docker/cron/crontab) por el contenedor `cron` de docker-compose.
+ * Idempotente: el ReminderLog garantiza que cada inscripción reciba cada
+ * recordatorio configurado una sola vez, así que llamarlo de más no hace daño.
  */
 export async function POST(request: NextRequest) {
   if (!isAuthorized(request)) {
     return new NextResponse(null, { status: 401 });
   }
 
-  const daysBefore = await resolveReminderDaysBefore();
-  const summary = await sendExamReminders(prisma, sendMail, new Date(), daysBefore);
+  const summary = await sendExamReminders(prisma, sendMail);
   return NextResponse.json(summary);
 }

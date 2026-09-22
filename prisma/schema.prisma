@@ -36,6 +36,14 @@ enum DocumentType {
   INE_BACK
 }
 
+enum EmailNotificationType {
+  REGISTRATION_CREATED
+  REGISTRATION_APPROVED
+  REGISTRATION_REJECTED
+  RESULT_PUBLISHED
+  EXAM_REMINDER
+}
+
 model Profile {
   id          String   @id @default(cuid())
   // Nullable: un admin puede "pre-invitar" por email antes del primer login;
@@ -296,6 +304,32 @@ model Setting {
   updatedAt DateTime @updatedAt
 }
 
+// Activar/desactivar cada tipo de correo desde Settings › Emails. Si no hay
+// fila para un tipo, se asume enabled=true (comportamiento histórico).
+model EmailSetting {
+  id        String                @id @default(cuid())
+  type      EmailNotificationType @unique
+  enabled   Boolean               @default(true)
+  createdAt DateTime              @default(now())
+  updatedAt DateTime              @updatedAt
+}
+
+// Cada fila es un envío programado del recordatorio de examen ("2 días
+// antes", "1 día antes", "5 minutos antes", ...) — se pueden tener varios a
+// la vez. minutesBefore es la unidad interna; el admin lo captura como
+// cantidad + unidad (minutos/horas/días) desde la UI.
+model ReminderSchedule {
+  id            String   @id @default(cuid())
+  minutesBefore Int
+  active        Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  reminderLogs ReminderLog[]
+
+  @@unique([minutesBefore])
+}
+
 model AuditLog {
   id             String   @id @default(cuid())
   // null = acción disparada por el sistema (ej. cron de recordatorios), sin actor humano.
@@ -313,14 +347,17 @@ model AuditLog {
 }
 
 model ReminderLog {
-  id             String   @id @default(cuid())
-  examDateId     String
-  registrationId String
-  sentAt         DateTime @default(now())
+  id                 String   @id @default(cuid())
+  examDateId         String
+  registrationId     String
+  reminderScheduleId String
+  sentAt             DateTime @default(now())
 
-  examDate     ExamDate     @relation(fields: [examDateId], references: [id], onDelete: Cascade)
-  registration Registration @relation(fields: [registrationId], references: [id], onDelete: Cascade)
+  examDate         ExamDate         @relation(fields: [examDateId], references: [id], onDelete: Cascade)
+  registration     Registration     @relation(fields: [registrationId], references: [id], onDelete: Cascade)
+  reminderSchedule ReminderSchedule @relation(fields: [reminderScheduleId], references: [id], onDelete: Cascade)
 
-  // Garantiza idempotencia: nunca se envía el mismo recordatorio dos veces.
-  @@unique([examDateId, registrationId])
+  // Garantiza idempotencia por envío programado: con varios ReminderSchedule
+  // activos, cada uno se envía una sola vez por inscripción.
+  @@unique([examDateId, registrationId, reminderScheduleId])
 }

@@ -7,6 +7,7 @@ import { recordAuditLog } from "@/lib/audit";
 import { toUserMessage } from "@/lib/errors";
 import { sendMail } from "@/lib/mail/send-mail";
 import { resultPublishedEmail } from "@/lib/mail/templates/result-published";
+import { isEmailNotificationEnabled } from "@/lib/mail/notification-settings";
 import { captureResult as captureResultService, publishResult as publishResultService } from "@/services/result-service";
 import { captureResultSchema } from "@/lib/validations/registration.schema";
 import type { ActionResult } from "@/types";
@@ -50,7 +51,7 @@ export async function publishResult(registrationId: string): Promise<ActionResul
       include: { profile: true, examDate: { include: { exam: true } }, result: true },
     });
 
-    if (registration.result) {
+    if (registration.result && (await isEmailNotificationEnabled(prisma, "RESULT_PUBLISHED"))) {
       // Por privacidad, el correo NO incluye el puntaje ni si aprobó; solo
       // avisa que ya están listos para revisar en el panel del alumno.
       const email = resultPublishedEmail({

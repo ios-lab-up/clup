@@ -7,6 +7,7 @@ import { prisma } from "@/lib/db/prisma";
 import { getStorage } from "@/lib/storage";
 import { sendMail } from "@/lib/mail/send-mail";
 import { registrationCreatedEmail } from "@/lib/mail/templates/registration-created";
+import { isEmailNotificationEnabled } from "@/lib/mail/notification-settings";
 import { AppError } from "@/lib/errors";
 import { toUserMessage } from "@/lib/errors";
 import { createRegistration, resubmitRegistration as resubmitRegistrationService } from "@/services/registration-service";
@@ -101,13 +102,15 @@ export async function submitRegistration(input: unknown): Promise<ActionResult<{
       },
     );
 
-    const email = registrationCreatedEmail({
-      studentName: profile.name,
-      examName: registration.examDate.exam.name,
-      termName: `${registration.examDate.term.name} ${registration.examDate.term.year}`,
-      examDate: registration.examDate.examDate,
-    });
-    await sendMail({ to: profile.email, ...email });
+    if (await isEmailNotificationEnabled(prisma, "REGISTRATION_CREATED")) {
+      const email = registrationCreatedEmail({
+        studentName: profile.name,
+        examName: registration.examDate.exam.name,
+        termName: `${registration.examDate.term.name} ${registration.examDate.term.year}`,
+        examDate: registration.examDate.examDate,
+      });
+      await sendMail({ to: profile.email, ...email });
+    }
 
     revalidatePath("/dashboard");
     return { ok: true, data: { registrationId: registration.id } };

@@ -7,6 +7,7 @@ import { recordAuditLog } from "@/lib/audit";
 import { AppError, toUserMessage } from "@/lib/errors";
 import { sendMail } from "@/lib/mail/send-mail";
 import { resultPublishedEmail } from "@/lib/mail/templates/result-published";
+import { isEmailNotificationEnabled } from "@/lib/mail/notification-settings";
 import {
   listUnpublishedResults,
   publishResultsForRegistrations,
@@ -47,9 +48,11 @@ export async function commitBulkPublish(examDateId: string): Promise<ActionResul
       metadata: { count: results.length },
     });
 
-    for (const result of results) {
-      const email = resultPublishedEmail({ studentName: result.studentName, examName: result.examName });
-      await sendMail({ to: result.studentEmail, ...email });
+    if (await isEmailNotificationEnabled(prisma, "RESULT_PUBLISHED")) {
+      for (const result of results) {
+        const email = resultPublishedEmail({ studentName: result.studentName, examName: result.examName });
+        await sendMail({ to: result.studentEmail, ...email });
+      }
     }
 
     revalidatePath("/admin/resultados");

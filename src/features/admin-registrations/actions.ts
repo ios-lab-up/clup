@@ -9,6 +9,7 @@ import { sendMail } from "@/lib/mail/send-mail";
 import { getStorage } from "@/lib/storage";
 import { registrationApprovedEmail } from "@/lib/mail/templates/registration-approved";
 import { registrationRejectedEmail } from "@/lib/mail/templates/registration-rejected";
+import { isEmailNotificationEnabled } from "@/lib/mail/notification-settings";
 import { approveRegistration as approveRegistrationService, rejectRegistration as rejectRegistrationService } from "@/services/registration-service";
 import { rejectRegistrationSchema } from "@/lib/validations/registration.schema";
 import type { ActionResult } from "@/types";
@@ -25,14 +26,16 @@ export async function approveRegistration(registrationId: string): Promise<Actio
       entityId: registrationId,
     });
 
-    const email = registrationApprovedEmail({
-      studentName: registration.profile.name,
-      examName: registration.examDate.exam.name,
-      termName: `${registration.examDate.term.name} ${registration.examDate.term.year}`,
-      examDate: registration.examDate.examDate,
-      info: registration.examDate.info,
-    });
-    await sendMail({ to: registration.profile.email, ...email });
+    if (await isEmailNotificationEnabled(prisma, "REGISTRATION_APPROVED")) {
+      const email = registrationApprovedEmail({
+        studentName: registration.profile.name,
+        examName: registration.examDate.exam.name,
+        termName: `${registration.examDate.term.name} ${registration.examDate.term.year}`,
+        examDate: registration.examDate.examDate,
+        info: registration.examDate.info,
+      });
+      await sendMail({ to: registration.profile.email, ...email });
+    }
 
     revalidatePath("/admin/inscripciones");
     return { ok: true, data: undefined };
@@ -56,14 +59,16 @@ export async function rejectRegistration(input: unknown): Promise<ActionResult> 
       metadata: { reason },
     });
 
-    const email = registrationRejectedEmail({
-      studentName: registration.profile.name,
-      examName: registration.examDate.exam.name,
-      termName: `${registration.examDate.term.name} ${registration.examDate.term.year}`,
-      examDate: registration.examDate.examDate,
-      reason: registration.rejectionReason,
-    });
-    await sendMail({ to: registration.profile.email, ...email });
+    if (await isEmailNotificationEnabled(prisma, "REGISTRATION_REJECTED")) {
+      const email = registrationRejectedEmail({
+        studentName: registration.profile.name,
+        examName: registration.examDate.exam.name,
+        termName: `${registration.examDate.term.name} ${registration.examDate.term.year}`,
+        examDate: registration.examDate.examDate,
+        reason: registration.rejectionReason,
+      });
+      await sendMail({ to: registration.profile.email, ...email });
+    }
 
     revalidatePath("/admin/inscripciones");
     return { ok: true, data: undefined };

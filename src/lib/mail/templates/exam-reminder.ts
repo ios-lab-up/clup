@@ -6,13 +6,24 @@ export interface ExamReminderProps {
   examDate: Date;
   info?: string | null;
   instructions?: string | null;
-  /** Días antes del examen en que se envía — configurable en Settings. Default 1 ("mañana"). */
-  daysBefore?: number;
+  /** Minutos antes del examen en que se envía — viene del ReminderSchedule configurado en Settings › Emails. */
+  minutesBefore: number;
+}
+
+/** "mañana" para 1440 (1 día); si no, la unidad más legible que quepa exacta. */
+function formatReminderTiming(minutesBefore: number): string {
+  if (minutesBefore === 1440) return "mañana";
+  if (minutesBefore % 1440 === 0) return `en ${minutesBefore / 1440} días`;
+  if (minutesBefore % 60 === 0) {
+    const hours = minutesBefore / 60;
+    return hours === 1 ? "en 1 hora" : `en ${hours} horas`;
+  }
+  return minutesBefore === 1 ? "en 1 minuto" : `en ${minutesBefore} minutos`;
 }
 
 export function examReminderEmail(props: ExamReminderProps): EmailContent {
-  const { studentName, examName, examDate, info, instructions, daysBefore = 1 } = props;
-  const timing = daysBefore === 1 ? "mañana" : `en ${daysBefore} días`;
+  const { studentName, examName, examDate, info, instructions, minutesBefore } = props;
+  const timing = formatReminderTiming(minutesBefore);
   const subject = `¡Tu examen es ${timing}! • ${examName}`;
   const formattedDate = formatExamDate(examDate);
   const firstName = studentName.split(" ")[0] || studentName;

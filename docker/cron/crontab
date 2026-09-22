@@ -1,8 +1,11 @@
-# Recordatorio de examen — se invoca cada hora. El endpoint es idempotente
-# (ReminderLog con constraint único), así que llamarlo de más nunca duplica
-# envíos; esto solo evita perder la ventana de "1 día antes" por reinicios
-# o drift del contenedor.
+# Recordatorio de examen — se invoca cada 5 minutos (debe calzar con
+# REMINDER_CRON_INTERVAL_MINUTES en src/lib/constants.ts: cambiar uno sin el
+# otro descuadra las ventanas de envío). El endpoint es idempotente
+# (ReminderLog con constraint único por envío programado), así que llamarlo
+# de más nunca duplica correos — el admin puede configurar varios
+# recordatorios (ej. "2 días antes", "1 día antes", "5 minutos antes") desde
+# Settings › Emails, cada uno se manda una sola vez por inscripción.
 #
 # cron no hereda las variables de entorno del contenedor por defecto, por
 # eso se cargan desde /etc/environment (escrito por entrypoint.sh al arrancar).
-0 * * * * . /etc/environment; /usr/bin/curl -sf -X POST -H "x-cron-secret: $CRON_SECRET" "$CRON_TARGET_URL" >> /var/log/cron.log 2>&1
+*/5 * * * * . /etc/environment; /usr/bin/curl -sf -X POST -H "x-cron-secret: $CRON_SECRET" "$CRON_TARGET_URL" >> /var/log/cron.log 2>&1

@@ -40,6 +40,11 @@ export const DOCUMENT_DOWNLOAD_URL_TTL_SECONDS = 60;
 
 export const CRON_SECRET_HEADER = "x-cron-secret";
 
+// Frecuencia real con la que corre el cron de recordatorios (docker/cron/crontab)
+// — el cálculo de ventana en reminder-service.ts tiene que calzar exactamente
+// con este valor o se pierden/duplican envíos. Cambiar ambos juntos.
+export const REMINDER_CRON_INTERVAL_MINUTES = 5;
+
 // Imágenes de contenido (avisos/FAQs) subidas por el admin y mostradas en
 // páginas públicas. Distinto de los documentos de inscripción: son públicas
 // (URL firmada de lectura de mayor duración), no privadas.
