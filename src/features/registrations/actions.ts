@@ -9,13 +9,13 @@ import { sendMail } from "@/lib/mail/send-mail";
 import { registrationCreatedEmail } from "@/lib/mail/templates/registration-created";
 import { AppError } from "@/lib/errors";
 import { toUserMessage } from "@/lib/errors";
-import { createRegistration } from "@/services/registration-service";
+import { createRegistration, resubmitRegistration as resubmitRegistrationService } from "@/services/registration-service";
 import {
   DOCUMENT_ALLOWED_MIME_TYPES,
   DOCUMENT_MAX_SIZE_BYTES,
 } from "@/lib/constants";
 import { buildUploadPolicyRequestSchema } from "@/lib/validations/document.schema";
-import { buildSubmitRegistrationSchema } from "@/lib/validations/registration.schema";
+import { buildResubmitRegistrationSchema, buildSubmitRegistrationSchema } from "@/lib/validations/registration.schema";
 import type { ActionResult } from "@/types";
 import type { UploadPolicy } from "@/lib/storage";
 
@@ -111,6 +111,65 @@ export async function submitRegistration(input: unknown): Promise<ActionResult<{
 
     revalidatePath("/dashboard");
     return { ok: true, data: { registrationId: registration.id } };
+  } catch (error) {
+    return { ok: false, message: toUserMessage(error, tErrors("generic")) };
+  }
+}
+
+/**
+ * Reabre una inscripción rechazada con documentos nuevos — mismo intento,
+ * misma fila, en vez de crear una inscripción nueva (bloqueado por
+ * @@unique([profileId, examDateId])).
+ */
+export async function resubmitRegistration(input: unknown): Promise<ActionResult> {
+  const [tValidation, tErrors] = await Promise.all([
+    getTranslations("Validation"),
+    getTranslations("Errors"),
+  ]);
+
+  try {
+    const profile = await requireOnboarding();
+    const schema = buildResubmitRegistrationSchema({
+      mustUploadAllDocuments: tValidation("mustUploadAllDocuments"),
+    });
+    const parsed = schema.parse(input);
+
+    const registration = await prisma.registration.findUnique({
+      where: { id: parsed.registrationId },
+    });
+    if (!registration || registration.profileId !== profile.id) {
+      throw new AppError(tErrors("registrationNotFound"));
+    }
+
+    const expectedPrefix = `registrations/${profile.id}/${registration.examDateId}/`;
+    for (const doc of parsed.documents) {
+      if (!doc.storageKey.startsWith(expectedPrefix)) {
+        throw new AppError(tErrors("invalidDocument"));
+      }
+      if (!DOCUMENT_ALLOWED_MIME_TYPES.includes(doc.mimeType as (typeof DOCUMENT_ALLOWED_MIME_TYPES)[number])) {
+        throw new AppError(tErrors("invalidFileType"));
+      }
+
+      const metadata = await getStorage().headObject(doc.storageKey);
+      if (!metadata || metadata.size > DOCUMENT_MAX_SIZE_BYTES) {
+        throw new AppError(tErrors("documentInvalidOrTooLarge"));
+      }
+    }
+
+    await resubmitRegistrationService(
+      prisma,
+      { registrationId: parsed.registrationId, profileId: profile.id, documents: parsed.documents },
+      {
+        registrationNotFound: tErrors("registrationNotFound"),
+        onlyRejectedCanResubmit: tErrors("onlyRejectedCanResubmit"),
+        examDateNotAvailable: tErrors("examDateNotAvailable"),
+        registrationClosed: tErrors("registrationClosed"),
+      },
+    );
+
+    revalidatePath(`/mis-examenes/${parsed.registrationId}`);
+    revalidatePath("/dashboard");
+    return { ok: true, data: undefined };
   } catch (error) {
     return { ok: false, message: toUserMessage(error, tErrors("generic")) };
   }

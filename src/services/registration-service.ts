@@ -85,3 +85,62 @@ export async function rejectRegistration(
     include: { profile: true, examDate: { include: { exam: true, term: true } } },
   });
 }
+
+export interface ResubmitRegistrationInput {
+  registrationId: string;
+  profileId: string;
+  documents: RegistrationDocumentInput[];
+}
+
+export interface ResubmitRegistrationMessages {
+  registrationNotFound: string;
+  onlyRejectedCanResubmit: string;
+  examDateNotAvailable: string;
+  registrationClosed: string;
+}
+
+/**
+ * Reabre una inscripción RECHAZADA con documentos nuevos, en vez de crear una
+ * inscripción nueva — evita el @@unique([profileId, examDateId]) y preserva
+ * el mismo "intento" (misma fila, mismo historial de audit log). Reemplaza
+ * (upsert) los documentos por tipo y regresa la inscripción a PENDING.
+ */
+export async function resubmitRegistration(
+  db: PrismaClient,
+  input: ResubmitRegistrationInput,
+  messages: ResubmitRegistrationMessages,
+) {
+  const registration = await db.registration.findUnique({
+    where: { id: input.registrationId },
+    include: { examDate: true },
+  });
+
+  if (!registration || registration.profileId !== input.profileId) {
+    throw new AppError(messages.registrationNotFound);
+  }
+  if (registration.status !== "REJECTED") {
+    throw new AppError(messages.onlyRejectedCanResubmit);
+  }
+  if (!registration.examDate.active) {
+    throw new AppError(messages.examDateNotAvailable);
+  }
+  if (getExamDateStatus(registration.examDate) === "CLOSED") {
+    throw new AppError(messages.registrationClosed);
+  }
+
+  return db.$transaction(async (tx) => {
+    for (const document of input.documents) {
+      await tx.document.upsert({
+        where: { registrationId_type: { registrationId: input.registrationId, type: document.type } },
+        update: { storageKey: document.storageKey, mimeType: document.mimeType, size: document.size },
+        create: { registrationId: input.registrationId, ...document },
+      });
+    }
+
+    return tx.registration.update({
+      where: { id: input.registrationId },
+      data: { status: "PENDING", rejectionReason: null },
+      include: { documents: true, examDate: { include: { exam: true, term: true } }, profile: true },
+    });
+  });
+}

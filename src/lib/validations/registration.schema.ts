@@ -46,6 +46,27 @@ export function buildSubmitRegistrationSchema(messages: SubmitRegistrationMessag
 
 export type SubmitRegistrationInput = z.infer<ReturnType<typeof buildSubmitRegistrationSchema>>;
 
+interface ResubmitRegistrationMessages {
+  mustUploadAllDocuments: string;
+}
+
+// Misma validación que submitRegistration (los 4 documentos requeridos) pero
+// sobre una inscripción ya existente — reabre el mismo intento en vez de crear uno nuevo.
+export function buildResubmitRegistrationSchema(messages: ResubmitRegistrationMessages) {
+  return z.object({
+    registrationId: z.string().min(1),
+    documents: z
+      .array(uploadedDocumentSchema)
+      .refine(
+        (documents) =>
+          REQUIRED_DOCUMENT_TYPES.every((type) => documents.some((doc) => doc.type === type)),
+        { error: messages.mustUploadAllDocuments },
+      ),
+  });
+}
+
+export type ResubmitRegistrationInput = z.infer<ReturnType<typeof buildResubmitRegistrationSchema>>;
+
 export const rejectRegistrationSchema = z.object({
   registrationId: z.string().min(1),
   reason: z.string().trim().max(500).nullish(),

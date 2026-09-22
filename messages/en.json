@@ -88,7 +88,10 @@
     "passed": "PASSED",
     "notPassed": "NOT PASSED",
     "resultNotAvailable": "Your result isn't available yet.",
-    "submittedDocuments": "Submitted documents"
+    "submittedDocuments": "Submitted documents",
+    "resubmitTitle": "Upload your documents again",
+    "resubmitSubtitle": "Fix what's needed and send them again — you don't have to start your registration over.",
+    "resubmitButton": "Submit again"
   },
   "RegistrationForm": {
     "name": "Name",
@@ -149,6 +152,8 @@
     "invalidDocument": "One of the uploaded documents isn't valid. Please try again.",
     "invalidFileType": "File type not allowed.",
     "documentInvalidOrTooLarge": "One of the uploaded documents isn't valid or exceeds the allowed size.",
+    "registrationNotFound": "We couldn't find that registration.",
+    "onlyRejectedCanResubmit": "You can only re-upload documents if your registration was rejected.",
     "generic": "Something went wrong. Please try again in a moment."
   },
   "Statuses": {

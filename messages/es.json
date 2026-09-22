@@ -88,7 +88,10 @@
     "passed": "APROBADO",
     "notPassed": "NO APROBADO",
     "resultNotAvailable": "Tu resultado aún no está disponible.",
-    "submittedDocuments": "Documentos entregados"
+    "submittedDocuments": "Documentos entregados",
+    "resubmitTitle": "Vuelve a subir tus documentos",
+    "resubmitSubtitle": "Corrige lo necesario y envíalos de nuevo — no tienes que volver a empezar tu inscripción.",
+    "resubmitButton": "Enviar de nuevo"
   },
   "RegistrationForm": {
     "name": "Nombre",
@@ -149,6 +152,8 @@
     "invalidDocument": "Uno de los documentos subidos no es válido. Vuelve a intentarlo.",
     "invalidFileType": "Tipo de archivo no permitido.",
     "documentInvalidOrTooLarge": "Uno de los documentos subidos no es válido o excede el tamaño permitido.",
+    "registrationNotFound": "No encontramos esa inscripción.",
+    "onlyRejectedCanResubmit": "Solo puedes volver a subir documentos si tu inscripción fue rechazada.",
     "generic": "Algo salió mal. Intenta nuevamente en unos momentos."
   },
   "Statuses": {

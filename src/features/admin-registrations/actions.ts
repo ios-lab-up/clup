@@ -8,6 +8,7 @@ import { toUserMessage } from "@/lib/errors";
 import { sendMail } from "@/lib/mail/send-mail";
 import { getStorage } from "@/lib/storage";
 import { registrationApprovedEmail } from "@/lib/mail/templates/registration-approved";
+import { registrationRejectedEmail } from "@/lib/mail/templates/registration-rejected";
 import { approveRegistration as approveRegistrationService, rejectRegistration as rejectRegistrationService } from "@/services/registration-service";
 import { rejectRegistrationSchema } from "@/lib/validations/registration.schema";
 import type { ActionResult } from "@/types";
@@ -45,7 +46,7 @@ export async function rejectRegistration(input: unknown): Promise<ActionResult> 
     const admin = await requireAdmin();
     const { registrationId, reason } = rejectRegistrationSchema.parse(input);
 
-    await rejectRegistrationService(prisma, registrationId, reason ?? null);
+    const registration = await rejectRegistrationService(prisma, registrationId, reason ?? null);
 
     await recordAuditLog(prisma, {
       actorProfileId: admin.id,
@@ -54,6 +55,15 @@ export async function rejectRegistration(input: unknown): Promise<ActionResult> 
       entityId: registrationId,
       metadata: { reason },
     });
+
+    const email = registrationRejectedEmail({
+      studentName: registration.profile.name,
+      examName: registration.examDate.exam.name,
+      termName: `${registration.examDate.term.name} ${registration.examDate.term.year}`,
+      examDate: registration.examDate.examDate,
+      reason: registration.rejectionReason,
+    });
+    await sendMail({ to: registration.profile.email, ...email });
 
     revalidatePath("/admin/inscripciones");
     return { ok: true, data: undefined };

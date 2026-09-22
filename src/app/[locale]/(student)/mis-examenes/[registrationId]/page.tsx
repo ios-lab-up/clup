@@ -5,6 +5,7 @@ import { Card, CardContent } from "@/components/ui/Card";
 import { RegistrationStatusBadge } from "@/components/exams/RegistrationStatusBadge";
 import { Badge } from "@/components/ui/Badge";
 import { Alert } from "@/components/ui/Alert";
+import { ResubmitDocumentsForm } from "@/components/forms/ResubmitDocumentsForm";
 import { Link } from "@/i18n/navigation";
 
 interface PageProps {
@@ -94,6 +95,23 @@ export default async function RegistrationDetailPage({ params }: PageProps) {
           </ul>
         </CardContent>
       </Card>
+
+      {registration.status === "REJECTED" && (
+        <Card className="mt-6">
+          <CardContent>
+            <h2 className="flex items-center gap-2 text-lg font-bold text-gray-900">
+              <FileText className="h-5 w-5 text-wine-700" />
+              {t("resubmitTitle")}
+            </h2>
+            <div className="mt-3">
+              <ResubmitDocumentsForm
+                registrationId={registration.id}
+                examDateId={registration.examDateId}
+              />
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }

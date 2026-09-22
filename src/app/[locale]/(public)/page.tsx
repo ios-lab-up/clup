@@ -4,6 +4,7 @@ import { listPublicExamDates } from "@/features/exams/queries";
 import { listActiveAnnouncements, listActiveFaqs } from "@/features/content/queries";
 import { ExamDateCard } from "@/components/exams/ExamDateCard";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { ImageWithLightbox } from "@/components/ui/ImageWithLightbox";
 import { Link } from "@/i18n/navigation";
 
 export default async function LandingPage() {
@@ -46,8 +47,13 @@ export default async function LandingPage() {
               {announcements.map((announcement) => (
                 <div key={announcement.id} className="overflow-hidden rounded-lg border border-gray-200 bg-white">
                   {announcement.imageUrl && (
-                    // eslint-disable-next-line @next/next/no-img-element -- URL firmada de R2, no un asset estático de Next
-                    <img src={announcement.imageUrl} alt="" className="h-40 w-full object-cover" />
+                    <div className="flex h-40 items-center justify-center bg-gray-100">
+                      <ImageWithLightbox
+                        src={announcement.imageUrl}
+                        alt=""
+                        className="h-full w-full cursor-zoom-in object-contain"
+                      />
+                    </div>
                   )}
                   <div className="p-5">
                     <h3 className="font-semibold text-gray-900">{announcement.title}</h3>
