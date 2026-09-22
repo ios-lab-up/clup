@@ -1,15 +1,16 @@
-import { ArrowRight, HelpCircle } from "lucide-react";
+import { ArrowRight, HelpCircle, Megaphone } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import { listPublicExamDates } from "@/features/exams/queries";
-import { listActiveFaqs } from "@/features/content/queries";
+import { listActiveAnnouncements, listActiveFaqs } from "@/features/content/queries";
 import { ExamDateCard } from "@/components/exams/ExamDateCard";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { Link } from "@/i18n/navigation";
 
 export default async function LandingPage() {
-  const [examDates, faqs, t] = await Promise.all([
+  const [examDates, faqs, announcements, t] = await Promise.all([
     listPublicExamDates(),
     listActiveFaqs(),
+    listActiveAnnouncements(),
     getTranslations("HomePage"),
   ]);
 
@@ -33,6 +34,31 @@ export default async function LandingPage() {
           </div>
         </div>
       </section>
+
+      {announcements.length > 0 && (
+        <section className="bg-gold-50">
+          <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+            <h2 className="mb-6 flex items-center gap-2 text-2xl font-bold text-gray-900">
+              <Megaphone className="h-6 w-6 text-wine-700" />
+              {t("announcementsTitle")}
+            </h2>
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+              {announcements.map((announcement) => (
+                <div key={announcement.id} className="overflow-hidden rounded-lg border border-gray-200 bg-white">
+                  {announcement.imageUrl && (
+                    // eslint-disable-next-line @next/next/no-img-element -- URL firmada de R2, no un asset estático de Next
+                    <img src={announcement.imageUrl} alt="" className="h-40 w-full object-cover" />
+                  )}
+                  <div className="p-5">
+                    <h3 className="font-semibold text-gray-900">{announcement.title}</h3>
+                    <p className="mt-1 text-sm text-gray-600">{announcement.body}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
         <div className="mb-6 flex items-center justify-between">

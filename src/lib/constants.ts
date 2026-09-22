@@ -39,3 +39,12 @@ export const EXAM_DATE_STATUS_LABELS: Record<string, string> = {
 export const DOCUMENT_DOWNLOAD_URL_TTL_SECONDS = 60;
 
 export const CRON_SECRET_HEADER = "x-cron-secret";
+
+// Imágenes de contenido (avisos/FAQs) subidas por el admin y mostradas en
+// páginas públicas. Distinto de los documentos de inscripción: son públicas
+// (URL firmada de lectura de mayor duración), no privadas.
+export const IMAGE_MAX_SIZE_BYTES = 5 * 1024 * 1024; // 5 MB
+
+export const IMAGE_ALLOWED_MIME_TYPES = ["image/jpeg", "image/png", "image/webp"] as const;
+
+export const IMAGE_DOWNLOAD_URL_TTL_SECONDS = 3600;

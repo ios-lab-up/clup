@@ -49,6 +49,10 @@ model Profile {
   // Carrera del alumno — se captura en el onboarding. Resuelve el puntaje mínimo
   // aplicable al calificar (ver ExamPassingScore). Null para docentes/externos.
   careerId    String?
+  // Campus del alumno — se captura en el onboarding (requerido para onboardings
+  // nuevos). Los perfiles ya onboardeados antes de este campo quedan en null
+  // hasta que lo editen en /perfil; no se re-abre el gate de onboarding por esto.
+  campusId    String?
   // Marca de que el alumno completó la encuesta inicial obligatoria. Mientras
   // sea null, requireOnboarding() lo regresa a /onboarding.
   onboardedAt DateTime?
@@ -57,11 +61,13 @@ model Profile {
   updatedAt   DateTime @updatedAt
 
   career        Career?  @relation(fields: [careerId], references: [id], onDelete: SetNull)
+  campus        Campus?  @relation(fields: [campusId], references: [id], onDelete: SetNull)
   registrations Registration[]
   auditLogs     AuditLog[]
 
   @@index([role])
   @@index([careerId])
+  @@index([campusId])
 }
 
 model Term {
@@ -110,6 +116,22 @@ model Faculty {
 
   careers       Career[]
   passingScores ExamPassingScore[]
+
+  @@index([order])
+}
+
+// Campus del alumno — catálogo plano, sin jerarquía (a diferencia de
+// Faculty/Career). Editable en Settings › Catalog. Se siembra con los
+// campus reales de la Panamericana en la propia migración (data migration).
+model Campus {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  order     Int      @default(0)
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  profiles Profile[]
 
   @@index([order])
 }
@@ -230,6 +252,22 @@ model FAQ {
   id        String   @id @default(cuid())
   question  String
   answer    String
+  imageKey  String?
+  order     Int      @default(0)
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([order])
+}
+
+// Avisos/anuncios mostrados en la portada pública. Distinto de Instruction
+// (instrucciones de proceso) — este es contenido tipo noticia, con imagen opcional.
+model Announcement {
+  id        String   @id @default(cuid())
+  title     String
+  body      String
+  imageKey  String?
   order     Int      @default(0)
   active    Boolean  @default(true)
   createdAt DateTime @default(now())

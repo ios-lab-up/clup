@@ -6,7 +6,7 @@ import { useRouter } from "@/i18n/navigation";
 import { Button } from "@/components/ui/Button";
 import { Input, Label, Select } from "@/components/ui/Input";
 import { Alert } from "@/components/ui/Alert";
-import { updateMyCareer } from "@/features/profile/actions";
+import { updateProfileDetails } from "@/features/profile/actions";
 import type { OnboardingFacultyOption } from "@/components/forms/OnboardingForm";
 
 interface ProfileFormProps {
@@ -14,8 +14,10 @@ interface ProfileFormProps {
   studentEmail: string;
   studentId: string;
   faculties: OnboardingFacultyOption[];
+  campuses: { id: string; name: string }[];
   currentFacultyId: string | null;
   currentCareerId: string | null;
+  currentCampusId: string | null;
 }
 
 export function ProfileForm({
@@ -23,14 +25,17 @@ export function ProfileForm({
   studentEmail,
   studentId,
   faculties,
+  campuses,
   currentFacultyId,
   currentCareerId,
+  currentCampusId,
 }: ProfileFormProps) {
   const t = useTranslations("Profile");
   const tOnboarding = useTranslations("Onboarding");
   const router = useRouter();
   const [facultyId, setFacultyId] = useState(currentFacultyId ?? "");
   const [careerId, setCareerId] = useState(currentCareerId ?? "");
+  const [campusId, setCampusId] = useState(currentCampusId ?? "");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
@@ -40,7 +45,8 @@ export function ProfileForm({
     [faculties, facultyId],
   );
   const isExternal = selectedFaculty?.isExternal ?? false;
-  const canSubmit = facultyId.length > 0 && (isExternal || careerId.length > 0) && !submitting;
+  const canSubmit =
+    facultyId.length > 0 && (isExternal || careerId.length > 0) && campusId.length > 0 && !submitting;
 
   async function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
@@ -48,9 +54,10 @@ export function ProfileForm({
     setError(null);
     setSaved(false);
 
-    const result = await updateMyCareer({
+    const result = await updateProfileDetails({
       facultyId,
       careerId: isExternal ? undefined : careerId,
+      campusId,
     });
 
     setSubmitting(false);
@@ -127,6 +134,26 @@ export function ProfileForm({
             </Select>
           </div>
         )}
+
+        <div className="mt-4">
+          <Label htmlFor="campusId">{tOnboarding("campus")}</Label>
+          <Select
+            id="campusId"
+            value={campusId}
+            onChange={(event) => {
+              setCampusId(event.target.value);
+              setSaved(false);
+            }}
+            required
+          >
+            <option value="">{tOnboarding("selectCampusOption")}</option>
+            {campuses.map((campus) => (
+              <option key={campus.id} value={campus.id}>
+                {campus.name}
+              </option>
+            ))}
+          </Select>
+        </div>
       </div>
 
       {error && <Alert variant="error">{error}</Alert>}

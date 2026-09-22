@@ -1,17 +1,20 @@
 import { listSettings, SETTING_LABELS } from "@/features/admin-settings/queries";
 import { listCatalog } from "@/features/admin-catalog/queries";
+import { listAllCampuses } from "@/features/admin-campus/queries";
 import { SettingsForm } from "@/components/admin/SettingsForm";
 import { EmailTestButtons } from "@/components/admin/EmailTestButtons";
 import { CatalogManager } from "@/components/admin/CatalogManager";
+import { CampusManager } from "@/components/admin/CampusManager";
 import { Tabs } from "@/components/ui/Tabs";
 import { requireAdmin } from "@/lib/auth/guards";
 
 export const metadata = { title: "Settings • Admin CLUP" };
 
 export default async function AdminSettingsPage() {
-  const [settings, faculties, admin] = await Promise.all([
+  const [settings, faculties, campuses, admin] = await Promise.all([
     listSettings(),
     listCatalog(),
+    listAllCampuses(),
     requireAdmin(),
   ]);
 
@@ -57,6 +60,21 @@ export default async function AdminSettingsPage() {
                       })),
                     }))}
                   />
+
+                  <div className="mt-8 border-t border-gray-200 pt-6">
+                    <h3 className="mb-1 text-base font-semibold text-gray-900">Campus</h3>
+                    <p className="mb-4 text-sm text-gray-600">
+                      Campus the student picks during onboarding, editable later from their profile.
+                    </p>
+                    <CampusManager
+                      campuses={campuses.map((campus) => ({
+                        id: campus.id,
+                        name: campus.name,
+                        order: campus.order,
+                        active: campus.active,
+                      }))}
+                    />
+                  </div>
                 </div>
               ),
             },

@@ -36,12 +36,19 @@ export async function completeOnboarding(input: unknown): Promise<ActionResult> 
       studentIdInvalidChars: tValidation("studentIdInvalidChars"),
       selectFaculty: tOnboarding("selectFaculty"),
       selectCareer: tOnboarding("selectCareer"),
+      selectCampus: tOnboarding("selectCampus"),
     });
     const parsed = schema.parse(input);
 
-    const faculty = await prisma.faculty.findUnique({ where: { id: parsed.facultyId } });
+    const [faculty, campus] = await Promise.all([
+      prisma.faculty.findUnique({ where: { id: parsed.facultyId } }),
+      prisma.campus.findUnique({ where: { id: parsed.campusId } }),
+    ]);
     if (!faculty || !faculty.active) {
       throw new AppError(tOnboarding("selectFaculty"));
+    }
+    if (!campus || !campus.active) {
+      throw new AppError(tOnboarding("selectCampus"));
     }
 
     let careerId: string | null = null;
@@ -63,7 +70,7 @@ export async function completeOnboarding(input: unknown): Promise<ActionResult> 
     try {
       await prisma.profile.update({
         where: { id: profile.id },
-        data: { studentId, careerId, onboardedAt: new Date() },
+        data: { studentId, careerId, campusId: campus.id, onboardedAt: new Date() },
       });
     } catch (error) {
       if (
@@ -82,7 +89,7 @@ export async function completeOnboarding(input: unknown): Promise<ActionResult> 
       action: "profile.onboarded",
       entity: "Profile",
       entityId: profile.id,
-      metadata: { careerId, facultyId: faculty.id },
+      metadata: { careerId, facultyId: faculty.id, campusId: campus.id },
     });
 
     revalidatePath("/", "layout");

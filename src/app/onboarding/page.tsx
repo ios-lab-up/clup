@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
 import { getTranslations } from "next-intl/server";
 import { requireAuth } from "@/lib/auth/guards";
-import { listActiveFacultiesWithCareers } from "@/features/catalog/queries";
+import { listActiveCampuses, listActiveFacultiesWithCareers } from "@/features/catalog/queries";
 import { deriveStudentIdFromEmail } from "@/lib/student-id";
 import { OnboardingForm } from "@/components/forms/OnboardingForm";
 
@@ -16,9 +16,10 @@ export default async function OnboardingPage() {
     redirect("/dashboard");
   }
 
-  const [t, faculties, cookieStore] = await Promise.all([
+  const [t, faculties, campuses, cookieStore] = await Promise.all([
     getTranslations("Onboarding"),
     listActiveFacultiesWithCareers(),
+    listActiveCampuses(),
     cookies(),
   ]);
   const locale = cookieStore.get("NEXT_LOCALE")?.value === "es" ? "es" : "en";
@@ -41,6 +42,7 @@ export default async function OnboardingPage() {
             isExternal: faculty.isExternal,
             careers: faculty.careers.map((career) => ({ id: career.id, name: career.name })),
           }))}
+          campuses={campuses.map((campus) => ({ id: campus.id, name: campus.name }))}
         />
       </div>
     </div>

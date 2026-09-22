@@ -10,17 +10,18 @@ import { recordAuditLog } from "@/lib/audit";
 import { AppError, toUserMessage } from "@/lib/errors";
 import type { ActionResult } from "@/types";
 
-const updateCareerSchema = z.object({
+const updateProfileDetailsSchema = z.object({
   facultyId: z.string().min(1),
   careerId: z
     .string()
     .trim()
     .optional()
     .transform((value) => (value ? value : null)),
+  campusId: z.string().min(1),
 });
 
-/** El alumno puede corregir su facultad/carrera desde su perfil. La matrícula no. */
-export async function updateMyCareer(input: unknown): Promise<ActionResult> {
+/** El alumno puede corregir su facultad/carrera/campus desde su perfil. La matrícula no. */
+export async function updateProfileDetails(input: unknown): Promise<ActionResult> {
   const cookieLocale = (await cookies()).get("NEXT_LOCALE")?.value;
   const locale = cookieLocale === "es" ? "es" : "en";
   const [tOnboarding, tErrors] = await Promise.all([
@@ -30,7 +31,7 @@ export async function updateMyCareer(input: unknown): Promise<ActionResult> {
 
   try {
     const profile = await requireOnboarding();
-    const parsed = updateCareerSchema.parse(input);
+    const parsed = updateProfileDetailsSchema.parse(input);
 
     const faculty = await prisma.faculty.findUnique({ where: { id: parsed.facultyId } });
     if (!faculty || !faculty.active) throw new AppError(tOnboarding("selectFaculty"));
@@ -45,13 +46,19 @@ export async function updateMyCareer(input: unknown): Promise<ActionResult> {
       careerId = career.id;
     }
 
-    await prisma.profile.update({ where: { id: profile.id }, data: { careerId } });
+    const campus = await prisma.campus.findUnique({ where: { id: parsed.campusId } });
+    if (!campus || !campus.active) throw new AppError(tOnboarding("selectCampus"));
+
+    await prisma.profile.update({
+      where: { id: profile.id },
+      data: { careerId, campusId: campus.id },
+    });
     await recordAuditLog(prisma, {
       actorProfileId: profile.id,
-      action: "profile.career_update",
+      action: "profile.details_update",
       entity: "Profile",
       entityId: profile.id,
-      metadata: { careerId, facultyId: faculty.id },
+      metadata: { careerId, facultyId: faculty.id, campusId: campus.id },
     });
 
     revalidatePath("/", "layout");

@@ -20,6 +20,7 @@ interface OnboardingFormProps {
   derivedStudentId: string | null;
   existingStudentId: string | null;
   faculties: OnboardingFacultyOption[];
+  campuses: { id: string; name: string }[];
   dashboardHref: string;
 }
 
@@ -29,6 +30,7 @@ export function OnboardingForm({
   derivedStudentId,
   existingStudentId,
   faculties,
+  campuses,
   dashboardHref,
 }: OnboardingFormProps) {
   const t = useTranslations("Onboarding");
@@ -36,6 +38,7 @@ export function OnboardingForm({
   const [studentId, setStudentId] = useState(lockedStudentId ?? "");
   const [facultyId, setFacultyId] = useState("");
   const [careerId, setCareerId] = useState("");
+  const [campusId, setCampusId] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -49,6 +52,7 @@ export function OnboardingForm({
     studentId.trim().length >= 4 &&
     facultyId.length > 0 &&
     (isExternal || careerId.length > 0) &&
+    campusId.length > 0 &&
     !submitting;
 
   async function handleSubmit(event: React.FormEvent) {
@@ -60,6 +64,7 @@ export function OnboardingForm({
       studentId,
       facultyId,
       careerId: isExternal ? undefined : careerId,
+      campusId,
     });
 
     if (!result.ok) {
@@ -142,6 +147,23 @@ export function OnboardingForm({
           </Select>
         </div>
       )}
+
+      <div>
+        <Label htmlFor="campusId">{t("campus")}</Label>
+        <Select
+          id="campusId"
+          value={campusId}
+          onChange={(event) => setCampusId(event.target.value)}
+          required
+        >
+          <option value="">{t("selectCampusOption")}</option>
+          {campuses.map((campus) => (
+            <option key={campus.id} value={campus.id}>
+              {campus.name}
+            </option>
+          ))}
+        </Select>
+      </div>
 
       {error && <Alert variant="error">{error}</Alert>}
 

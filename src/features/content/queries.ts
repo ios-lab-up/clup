@@ -1,8 +1,33 @@
 import "server-only";
 import { prisma } from "@/lib/db/prisma";
+import { getStorage } from "@/lib/storage";
+import { IMAGE_DOWNLOAD_URL_TTL_SECONDS } from "@/lib/constants";
 
 export async function listActiveFaqs() {
-  return prisma.fAQ.findMany({ where: { active: true }, orderBy: { order: "asc" } });
+  const faqs = await prisma.fAQ.findMany({ where: { active: true }, orderBy: { order: "asc" } });
+  return Promise.all(
+    faqs.map(async (faq) => ({
+      ...faq,
+      imageUrl: faq.imageKey
+        ? await getStorage().getDownloadUrl(faq.imageKey, IMAGE_DOWNLOAD_URL_TTL_SECONDS)
+        : null,
+    })),
+  );
+}
+
+export async function listActiveAnnouncements() {
+  const announcements = await prisma.announcement.findMany({
+    where: { active: true },
+    orderBy: { order: "asc" },
+  });
+  return Promise.all(
+    announcements.map(async (announcement) => ({
+      ...announcement,
+      imageUrl: announcement.imageKey
+        ? await getStorage().getDownloadUrl(announcement.imageKey, IMAGE_DOWNLOAD_URL_TTL_SECONDS)
+        : null,
+    })),
+  );
 }
 
 export async function listActiveInstructions() {

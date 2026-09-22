@@ -14,20 +14,29 @@ function addDays(date: Date, days: number): Date {
   return copy;
 }
 
-/** Ventana [mañana 00:00, pasado mañana 00:00) — exámenes exactamente a 1 día. */
-export function getTomorrowWindow(now: Date) {
-  const start = addDays(startOfDay(now), 1);
+/**
+ * Ventana [now+daysBefore 00:00, now+daysBefore+1 00:00) — exámenes
+ * exactamente a `daysBefore` días. `daysBefore` es configurable desde
+ * Settings (key `reminder_days_before`, default 1 si no se ha guardado).
+ */
+export function getTomorrowWindow(now: Date, daysBefore: number = 1) {
+  const start = addDays(startOfDay(now), daysBefore);
   const end = addDays(start, 1);
   return { start, end };
 }
 
 /**
- * Inscripciones aprobadas cuyo examen es mañana y que aún no tienen un
- * ReminderLog — la unicidad (examDateId, registrationId) en DB es la
- * garantía última de idempotencia, esto es solo la selección de candidatos.
+ * Inscripciones aprobadas cuyo examen cae en la ventana configurada y que aún
+ * no tienen un ReminderLog — la unicidad (examDateId, registrationId) en DB
+ * es la garantía última de idempotencia, esto es solo la selección de
+ * candidatos.
  */
-export async function findEligibleReminders(db: PrismaClient, now: Date = new Date()) {
-  const { start, end } = getTomorrowWindow(now);
+export async function findEligibleReminders(
+  db: PrismaClient,
+  now: Date = new Date(),
+  daysBefore: number = 1,
+) {
+  const { start, end } = getTomorrowWindow(now, daysBefore);
 
   return db.registration.findMany({
     where: {
@@ -56,8 +65,9 @@ export async function sendExamReminders(
   db: PrismaClient,
   sendMailFn: SendMailFn,
   now: Date = new Date(),
+  daysBefore: number = 1,
 ): Promise<SendExamRemindersSummary> {
-  const registrations = await findEligibleReminders(db, now);
+  const registrations = await findEligibleReminders(db, now, daysBefore);
 
   let sent = 0;
   let failed = 0;
@@ -69,6 +79,7 @@ export async function sendExamReminders(
       examDate: registration.examDate.examDate,
       info: registration.examDate.info,
       instructions: registration.examDate.instructions,
+      daysBefore,
     });
 
     const result = await sendMailFn({ to: registration.profile.email, ...email });

@@ -15,3 +15,8 @@ export async function listActiveFacultiesWithCareers() {
     },
   });
 }
+
+/** Campus activos, ordenados. Los captura el alumno en onboarding y /perfil. */
+export async function listActiveCampuses() {
+  return prisma.campus.findMany({ where: { active: true }, orderBy: { order: "asc" } });
+}

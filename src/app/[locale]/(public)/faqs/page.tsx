@@ -19,6 +19,10 @@ export default async function FaqsPage() {
         <dl className="mt-8 space-y-4">
           {faqs.map((faq) => (
             <div key={faq.id} className="rounded-xl border border-gray-200 bg-white p-6">
+              {faq.imageUrl && (
+                // eslint-disable-next-line @next/next/no-img-element -- URL firmada de R2, no un asset estático de Next
+                <img src={faq.imageUrl} alt="" className="mb-4 max-h-64 w-full rounded-lg object-contain" />
+              )}
               <dt className="font-semibold text-gray-900">{faq.question}</dt>
               <dd className="mt-2 text-sm text-gray-600">{faq.answer}</dd>
             </div>

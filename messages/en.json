@@ -35,7 +35,8 @@
     "upcomingExams": "Upcoming exams",
     "viewAll": "View all",
     "noExamsScheduled": "No exams scheduled at the moment",
-    "faqsTitle": "Frequently asked questions"
+    "faqsTitle": "Frequently asked questions",
+    "announcementsTitle": "Announcements"
   },
   "ExamDateCard": {
     "examDate": "Exam date: {date}",
@@ -114,9 +115,12 @@
     "career": "Program",
     "selectCareerOption": "Select your program",
     "careerExternalNote": "As faculty or an external guest you don't need to select a program.",
+    "campus": "Campus",
+    "selectCampusOption": "Select your campus",
     "submit": "Save and continue",
     "selectFaculty": "Select a valid faculty.",
     "selectCareer": "Select a valid program.",
+    "selectCampus": "Select a valid campus.",
     "studentIdTaken": "That student ID is already registered on another account. Contact an administrator."
   },
   "DocumentUpload": {

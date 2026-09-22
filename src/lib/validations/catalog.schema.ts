@@ -14,5 +14,12 @@ export const careerSchema = z.object({
   active: z.coerce.boolean().default(true),
 });
 
+export const campusSchema = z.object({
+  name: z.string().trim().min(1, { error: "El nombre es requerido." }),
+  order: z.coerce.number().int().default(0),
+  active: z.coerce.boolean().default(true),
+});
+
 export type FacultyInput = z.infer<typeof facultySchema>;
 export type CareerInput = z.infer<typeof careerSchema>;
+export type CampusInput = z.infer<typeof campusSchema>;

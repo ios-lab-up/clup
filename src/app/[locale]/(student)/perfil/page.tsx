@@ -1,16 +1,17 @@
 import { getTranslations } from "next-intl/server";
 import { requireOnboarding } from "@/lib/auth/guards";
 import { prisma } from "@/lib/db/prisma";
-import { listActiveFacultiesWithCareers } from "@/features/catalog/queries";
+import { listActiveCampuses, listActiveFacultiesWithCareers } from "@/features/catalog/queries";
 import { ProfileForm } from "@/components/forms/ProfileForm";
 
 export const metadata = { title: "Profile • CLUP" };
 
 export default async function PerfilPage() {
   const authProfile = await requireOnboarding();
-  const [t, faculties, profile] = await Promise.all([
+  const [t, faculties, campuses, profile] = await Promise.all([
     getTranslations("Profile"),
     listActiveFacultiesWithCareers(),
+    listActiveCampuses(),
     prisma.profile.findUniqueOrThrow({
       where: { id: authProfile.id },
       include: { career: { select: { id: true, facultyId: true } } },
@@ -29,6 +30,8 @@ export default async function PerfilPage() {
           studentId={profile.studentId ?? ""}
           currentFacultyId={profile.career?.facultyId ?? null}
           currentCareerId={profile.career?.id ?? null}
+          currentCampusId={profile.campusId}
+          campuses={campuses.map((campus) => ({ id: campus.id, name: campus.name }))}
           faculties={faculties.map((faculty) => ({
             id: faculty.id,
             name: faculty.name,

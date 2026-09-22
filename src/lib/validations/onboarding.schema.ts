@@ -7,6 +7,7 @@ interface OnboardingMessages {
   studentIdInvalidChars: string;
   selectFaculty: string;
   selectCareer: string;
+  selectCampus: string;
 }
 
 // Función (no constante): los mensajes vienen de getTranslations("Onboarding")
@@ -21,6 +22,7 @@ export function buildOnboardingSchema(messages: OnboardingMessages) {
       .trim()
       .optional()
       .transform((value) => (value ? value : null)),
+    campusId: z.string().min(1, { error: messages.selectCampus }),
   });
 }
 

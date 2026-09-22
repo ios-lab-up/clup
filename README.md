@@ -27,7 +27,7 @@ prisma7.config.ts        Config de Prisma 7 (schema, migraciones, comando de see
 src/
   proxy.ts               Middleware de Next.js 16 — solo habilita el contexto de Clerk
   app/
-    (public)/            Landing, exámenes, FAQs, instrucciones — sin login
+    (public)/            Landing (avisos + FAQs), exámenes, FAQs, instrucciones — sin login
     sign-in/              Login con Clerk (Google)
     (student)/            Dashboard, inscripción, detalle de examen — requiere sesión
     admin/                Dashboard administrativo — requiere rol ADMIN
@@ -40,7 +40,7 @@ src/
     ui/                   Primitivos del design system (Button, Card, Badge, Table, ...)
     layout/               Header, Footer, AdminNav
     exams/                Badges de estado de examen/inscripción
-    forms/                Formulario de inscripción + subida de documentos
+    forms/                Formulario de inscripción + subida de documentos/imágenes
     admin/                Managers de cada sección del dashboard admin
   lib/
     auth/                 getCurrentProfile(), requireAuth(), requireAdmin(), canAccessDocument()
@@ -75,6 +75,10 @@ tests/unit/                 Suites Vitest (services + lib)
 - **Emails**: `sendMail()` nunca lanza — un fallo de Mailgun no debe tumbar la operación principal (ej. aprobar una inscripción). Sin `MAILGUN_API_KEY`, cae a un provider de consola.
 - **Recordatorio de examen**: idempotente vía `ReminderLog` con constraint único `(examDateId, registrationId)`. El cron corre cada hora (no una vez al día) para tolerar reinicios/drift sin perder la ventana — es seguro porque el endpoint es idempotente.
 - **Importación CSV de resultados**: dos pasos — `previewResultsImport` (no escribe nada, clasifica cada fila en `ok`/`overwrite`/`error`) y `commitResultsImport` (solo tras confirmación explícita del admin, con checkbox obligatorio si hay sobrescrituras). Deja `published: false` — no auto-publica ni auto-envía correo; se reusa la acción individual "Publicar resultado" para eso.
+- **Avisos** (`Announcement`, `/admin/avisos`): distinto de `Instruction` (instrucciones de proceso) — es contenido tipo noticia con imagen opcional, mostrado en la portada pública. **FAQ** también admite imagen opcional. Ambos comparten el mismo componente de subida (`ImageUploadField`, drag-and-drop + presigned PUT a R2 vía `createContentImageUploadPolicy`) y la misma revalidación server-side (`assertValidContentImageKey`, `lib/storage/content-image.ts`) antes de persistir.
+- **Imágenes de contenido son "públicas" pero R2 no tiene bucket público**: en vez de eso, `listActiveFaqs()`/`listActiveAnnouncements()` generan una URL de lectura firmada (`getDownloadUrl`, TTL 1h) en cada render server-side. No requiere infraestructura extra, a costa de que la URL no es cacheable a largo plazo.
+- **Campus** (`Campus`, catálogo plano en Settings › Catalog, seed inicial "Mixcoac"/"Ciudad UP"): se captura en onboarding (obligatorio para altas nuevas) y se edita después en `/perfil`. Los perfiles onboardeados antes de este campo quedan con `campusId: null` hasta que el alumno lo edite — no se re-abre el gate de onboarding retroactivamente.
+- **Frecuencia del recordatorio de examen**: configurable en Settings (`Setting["reminder_days_before"]`, entero 1–30, default 1 si no se ha guardado). `reminder-service.ts` y el template de correo (`exam-reminder.ts`) reciben `daysBefore` como parámetro — el copy cambia de "mañana" a "en N días" cuando no es 1.
 
 ## Instalación
 

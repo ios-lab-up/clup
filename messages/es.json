@@ -35,7 +35,8 @@
     "upcomingExams": "Próximos exámenes",
     "viewAll": "Ver todos",
     "noExamsScheduled": "No hay exámenes programados por el momento",
-    "faqsTitle": "Preguntas frecuentes"
+    "faqsTitle": "Preguntas frecuentes",
+    "announcementsTitle": "Avisos"
   },
   "ExamDateCard": {
     "examDate": "Examen: {date}",
@@ -114,9 +115,12 @@
     "career": "Carrera",
     "selectCareerOption": "Selecciona tu carrera",
     "careerExternalNote": "Como docente o externo no necesitas seleccionar carrera.",
+    "campus": "Campus",
+    "selectCampusOption": "Selecciona tu campus",
     "submit": "Guardar y continuar",
     "selectFaculty": "Selecciona una facultad válida.",
     "selectCareer": "Selecciona una carrera válida.",
+    "selectCampus": "Selecciona un campus válido.",
     "studentIdTaken": "Esa matrícula ya está registrada en otra cuenta. Contacta a un administrador."
   },
   "DocumentUpload": {

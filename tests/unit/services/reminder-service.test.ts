@@ -10,11 +10,18 @@ beforeEach(() => {
 });
 
 describe("getTomorrowWindow", () => {
-  it("returns [tomorrow 00:00, day-after-tomorrow 00:00)", () => {
+  it("returns [tomorrow 00:00, day-after-tomorrow 00:00) by default", () => {
     const now = new Date("2026-09-03T15:30:00.000Z");
     const { start, end } = getTomorrowWindow(now);
     expect(start.toISOString().slice(0, 10)).toBe("2026-09-04");
     expect(end.toISOString().slice(0, 10)).toBe("2026-09-05");
+  });
+
+  it("shifts the window when a custom daysBefore is configured", () => {
+    const now = new Date("2026-09-03T15:30:00.000Z");
+    const { start, end } = getTomorrowWindow(now, 3);
+    expect(start.toISOString().slice(0, 10)).toBe("2026-09-06");
+    expect(end.toISOString().slice(0, 10)).toBe("2026-09-07");
   });
 });
 

@@ -4,7 +4,14 @@ import type { NextRequest } from "next/server";
 import { prisma } from "@/lib/db/prisma";
 import { sendMail } from "@/lib/mail/send-mail";
 import { sendExamReminders } from "@/services/reminder-service";
+import { getSetting } from "@/features/content/queries";
 import { CRON_SECRET_HEADER } from "@/lib/constants";
+
+async function resolveReminderDaysBefore(): Promise<number> {
+  const raw = await getSetting("reminder_days_before");
+  const parsed = raw ? Number.parseInt(raw, 10) : NaN;
+  return Number.isInteger(parsed) && parsed > 0 ? parsed : 1;
+}
 
 function isAuthorized(request: NextRequest): boolean {
   const expected = process.env.CRON_SECRET;
@@ -28,6 +35,7 @@ export async function POST(request: NextRequest) {
     return new NextResponse(null, { status: 401 });
   }
 
-  const summary = await sendExamReminders(prisma, sendMail);
+  const daysBefore = await resolveReminderDaysBefore();
+  const summary = await sendExamReminders(prisma, sendMail, new Date(), daysBefore);
   return NextResponse.json(summary);
 }

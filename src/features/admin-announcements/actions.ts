@@ -6,100 +6,101 @@ import { prisma } from "@/lib/db/prisma";
 import { recordAuditLog } from "@/lib/audit";
 import { toUserMessage } from "@/lib/errors";
 import { assertValidContentImageKey } from "@/lib/storage/content-image";
-import { faqSchema } from "@/lib/validations/content.schema";
+import { announcementSchema } from "@/lib/validations/content.schema";
 import type { ActionResult } from "@/types";
 
-function revalidatePublicFaqs() {
+function revalidatePublicAnnouncements() {
   revalidatePath("/");
-  revalidatePath("/faqs");
 }
 
-export async function createFaq(input: unknown): Promise<ActionResult> {
+export async function createAnnouncement(input: unknown): Promise<ActionResult> {
   try {
     const admin = await requireAdmin();
-    const data = faqSchema.parse(input);
+    const data = announcementSchema.parse(input);
     await assertValidContentImageKey(data.imageKey);
-    const faq = await prisma.fAQ.create({ data });
+    const announcement = await prisma.announcement.create({ data });
     await recordAuditLog(prisma, {
       actorProfileId: admin.id,
-      action: "faq.create",
-      entity: "FAQ",
-      entityId: faq.id,
+      action: "announcement.create",
+      entity: "Announcement",
+      entityId: announcement.id,
     });
-    revalidatePublicFaqs();
+    revalidatePublicAnnouncements();
     return { ok: true, data: undefined };
   } catch (error) {
     return { ok: false, message: toUserMessage(error) };
   }
 }
 
-export async function updateFaq(id: string, input: unknown): Promise<ActionResult> {
+export async function updateAnnouncement(id: string, input: unknown): Promise<ActionResult> {
   try {
     const admin = await requireAdmin();
-    const data = faqSchema.parse(input);
+    const data = announcementSchema.parse(input);
     await assertValidContentImageKey(data.imageKey);
-    await prisma.fAQ.update({ where: { id }, data });
+    await prisma.announcement.update({ where: { id }, data });
     await recordAuditLog(prisma, {
       actorProfileId: admin.id,
-      action: "faq.update",
-      entity: "FAQ",
+      action: "announcement.update",
+      entity: "Announcement",
       entityId: id,
     });
-    revalidatePublicFaqs();
+    revalidatePublicAnnouncements();
     return { ok: true, data: undefined };
   } catch (error) {
     return { ok: false, message: toUserMessage(error) };
   }
 }
 
-export async function deleteFaq(id: string): Promise<ActionResult> {
+export async function deleteAnnouncement(id: string): Promise<ActionResult> {
   try {
     const admin = await requireAdmin();
-    await prisma.fAQ.delete({ where: { id } });
+    await prisma.announcement.delete({ where: { id } });
     await recordAuditLog(prisma, {
       actorProfileId: admin.id,
-      action: "faq.delete",
-      entity: "FAQ",
+      action: "announcement.delete",
+      entity: "Announcement",
       entityId: id,
     });
-    revalidatePublicFaqs();
+    revalidatePublicAnnouncements();
     return { ok: true, data: undefined };
   } catch (error) {
     return { ok: false, message: toUserMessage(error) };
   }
 }
 
-export async function setFaqActive(id: string, active: boolean): Promise<ActionResult> {
+export async function setAnnouncementActive(id: string, active: boolean): Promise<ActionResult> {
   try {
     const admin = await requireAdmin();
-    await prisma.fAQ.update({ where: { id }, data: { active } });
+    await prisma.announcement.update({ where: { id }, data: { active } });
     await recordAuditLog(prisma, {
       actorProfileId: admin.id,
-      action: active ? "faq.activate" : "faq.deactivate",
-      entity: "FAQ",
+      action: active ? "announcement.activate" : "announcement.deactivate",
+      entity: "Announcement",
       entityId: id,
     });
-    revalidatePublicFaqs();
+    revalidatePublicAnnouncements();
     return { ok: true, data: undefined };
   } catch (error) {
     return { ok: false, message: toUserMessage(error) };
   }
 }
 
-export async function reorderFaqs(orderedIds: string[]): Promise<ActionResult> {
+export async function reorderAnnouncements(orderedIds: string[]): Promise<ActionResult> {
   try {
     const admin = await requireAdmin();
     await prisma.$transaction(
-      orderedIds.map((id, index) => prisma.fAQ.update({ where: { id }, data: { order: index } })),
+      orderedIds.map((id, index) =>
+        prisma.announcement.update({ where: { id }, data: { order: index } }),
+      ),
     );
     await recordAuditLog(prisma, {
       actorProfileId: admin.id,
-      action: "faq.reorder",
-      entity: "FAQ",
+      action: "announcement.reorder",
+      entity: "Announcement",
       entityId: "bulk",
       metadata: { orderedIds },
     });
-    revalidatePublicFaqs();
+    revalidatePublicAnnouncements();
     return { ok: true, data: undefined };
   } catch (error) {
     return { ok: false, message: toUserMessage(error) };

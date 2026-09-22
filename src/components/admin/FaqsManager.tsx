@@ -11,12 +11,15 @@ import { Alert } from "@/components/ui/Alert";
 import { Badge } from "@/components/ui/Badge";
 import { IconButton } from "@/components/ui/IconButton";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { ImageUploadField } from "@/components/forms/ImageUploadField";
 import { createFaq, deleteFaq, reorderFaqs, setFaqActive, updateFaq } from "@/features/admin-faqs/actions";
 
 interface FaqRow {
   id: string;
   question: string;
   answer: string;
+  imageKey: string | null;
+  imageUrl: string | null;
   order: number;
   active: boolean;
 }
@@ -37,6 +40,7 @@ export function FaqsManager({ faqs }: { faqs: FaqRow[] }) {
     const input = {
       question: formData.get("question"),
       answer: formData.get("answer"),
+      imageKey: formData.get("imageKey"),
       order: modalFaq !== "new" ? modalFaq?.order : faqs.length,
       active: formData.get("active") === "on",
     };
@@ -95,9 +99,15 @@ export function FaqsManager({ faqs }: { faqs: FaqRow[] }) {
           {faqs.map((faq, index) => (
             <div key={faq.id} className="rounded-lg border border-gray-200 bg-white p-4">
               <div className="flex items-start justify-between gap-3">
-                <div className="flex-1">
-                  <p className="font-medium text-gray-900">{faq.question}</p>
-                  <p className="mt-1 text-sm text-gray-600">{faq.answer}</p>
+                <div className="flex flex-1 gap-3">
+                  {faq.imageUrl && (
+                    // eslint-disable-next-line @next/next/no-img-element -- URL firmada de R2, no un asset estático de Next
+                    <img src={faq.imageUrl} alt="" className="h-16 w-16 shrink-0 rounded object-cover" />
+                  )}
+                  <div>
+                    <p className="font-medium text-gray-900">{faq.question}</p>
+                    <p className="mt-1 text-sm text-gray-600">{faq.answer}</p>
+                  </div>
                 </div>
                 <Badge tone={faq.active ? "green" : "gray"}>{faq.active ? "Active" : "Inactive"}</Badge>
               </div>
@@ -129,6 +139,16 @@ export function FaqsManager({ faqs }: { faqs: FaqRow[] }) {
           <div>
             <Label htmlFor="answer">Answer</Label>
             <Textarea id="answer" name="answer" defaultValue={modalFaq !== "new" ? modalFaq?.answer : ""} required rows={3} />
+          </div>
+          <div>
+            <Label>Image (optional)</Label>
+            <ImageUploadField
+              key={modalFaq !== "new" ? modalFaq?.id : "new"}
+              name="imageKey"
+              kind="faq"
+              initialImageKey={modalFaq !== "new" ? modalFaq?.imageKey : null}
+              initialImageUrl={modalFaq !== "new" ? modalFaq?.imageUrl : null}
+            />
           </div>
           <label className="flex items-center gap-2 text-sm text-gray-700">
             <input type="checkbox" name="active" defaultChecked={modalFaq !== "new" ? modalFaq?.active : true} />
